@@ -183,8 +183,8 @@ fun MainNavigation(
             composable(route = Routes.GEL_ADD) {
                 EditGelContent(
                     gel = null,
-                    onSave = { name, price, colorCode ->
-                        gelViewModel.insertGel(name, price, colorCode)
+                    onSave = { name, price, colorCode, imageUri, _ ->
+                        gelViewModel.insertGel(name, price, colorCode, imageUri)
                         navController.popBackStack()
                     },
                     modifier = Modifier.fillMaxSize()
@@ -224,8 +224,8 @@ fun MainNavigation(
                 gel?.let { gelItem ->
                     EditGelContent(
                         gel = gelItem,
-                        onSave = { name, price, colorCode ->
-                            gelViewModel.updateGel(gelId, name, price, colorCode)
+                        onSave = { name, price, colorCode, imageUri, existingImagePath ->
+                            gelViewModel.updateGel(gelId, name, price, colorCode, imageUri, existingImagePath)
                             navController.popBackStack()
                         },
                         modifier = Modifier.fillMaxSize()

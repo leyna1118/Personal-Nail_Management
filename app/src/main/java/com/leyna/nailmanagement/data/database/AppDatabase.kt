@@ -12,7 +12,7 @@ import com.leyna.nailmanagement.data.entity.NailStyleGelCrossRef
 
 @Database(
     entities = [Gel::class, NailStyle::class, NailStyleGelCrossRef::class],
-    version = 1,
+    version = 2,
     exportSchema = false
 )
 abstract class AppDatabase : RoomDatabase() {
