@@ -9,5 +9,6 @@ data class Gel(
     val id: Long = 0,
     val name: String,
     val price: Double,
-    val colorCode: String
+    val colorCode: String,
+    val imagePath: String? = null
 )
