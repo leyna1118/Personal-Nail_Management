@@ -8,5 +8,14 @@ data class NailStyle(
     @PrimaryKey(autoGenerate = true)
     val id: Long = 0,
     val name: String,
-    val steps: String // JSON array stored as string: ["step1", "step2"]
+    val steps: String, // Format: "stepText;;imagePath|||stepText;;imagePath|||..."
+    val imagePath: String? = null // Main finished result image
+)
+
+/**
+ * Represents a single step with optional image
+ */
+data class StepWithImage(
+    val text: String,
+    val imagePath: String? = null
 )
