@@ -19,8 +19,12 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.unit.dp
+import coil.compose.AsyncImage
 import com.leyna.nailmanagement.data.entity.NailStyleWithGels
 import com.leyna.nailmanagement.ui.viewmodel.NailStyleViewModel
 
@@ -41,6 +45,20 @@ fun NailDetailContent(
             .padding(16.dp)
             .verticalScroll(rememberScrollState())
     ) {
+        // Main finished image
+        if (nailStyle.imagePath != null) {
+            AsyncImage(
+                model = nailStyle.imagePath,
+                contentDescription = "Finished nail style",
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(200.dp)
+                    .clip(RoundedCornerShape(12.dp)),
+                contentScale = ContentScale.Crop
+            )
+            Spacer(modifier = Modifier.height(16.dp))
+        }
+
         // Style Name
         Text(
             text = nailStyle.name,
@@ -86,21 +104,43 @@ fun NailDetailContent(
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
             Spacer(modifier = Modifier.height(8.dp))
-            Card(
-                modifier = Modifier.fillMaxWidth(),
-                elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
-            ) {
-                Column(
-                    modifier = Modifier.padding(16.dp),
-                    verticalArrangement = Arrangement.spacedBy(12.dp)
+
+            steps.forEachIndexed { index, step ->
+                Card(
+                    modifier = Modifier.fillMaxWidth(),
+                    elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
                 ) {
-                    steps.forEachIndexed { index, step ->
+                    Column(
+                        modifier = Modifier.padding(12.dp)
+                    ) {
                         Text(
-                            text = "Step ${index + 1}: $step",
+                            text = "Step ${index + 1}",
+                            style = MaterialTheme.typography.labelMedium,
+                            color = MaterialTheme.colorScheme.primary
+                        )
+                        Spacer(modifier = Modifier.height(8.dp))
+
+                        // Step image if available
+                        if (step.imagePath != null) {
+                            AsyncImage(
+                                model = step.imagePath,
+                                contentDescription = "Step ${index + 1} image",
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .height(150.dp)
+                                    .clip(RoundedCornerShape(8.dp)),
+                                contentScale = ContentScale.Crop
+                            )
+                            Spacer(modifier = Modifier.height(8.dp))
+                        }
+
+                        Text(
+                            text = step.text,
                             style = MaterialTheme.typography.bodyMedium
                         )
                     }
                 }
+                Spacer(modifier = Modifier.height(12.dp))
             }
         }
 

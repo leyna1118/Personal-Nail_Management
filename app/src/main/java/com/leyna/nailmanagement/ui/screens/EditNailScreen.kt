@@ -1,6 +1,10 @@
 package com.leyna.nailmanagement.ui.screens
 
+import android.net.Uri
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -34,6 +38,7 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
@@ -41,31 +46,88 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.PopupProperties
+import coil.compose.AsyncImage
 import com.leyna.nailmanagement.data.entity.Gel
 import com.leyna.nailmanagement.data.entity.NailStyleWithGels
+import com.leyna.nailmanagement.data.entity.StepWithImage
 import com.leyna.nailmanagement.ui.viewmodel.NailStyleViewModel
+import com.leyna.nailmanagement.ui.viewmodel.StepInput
+
+/**
+ * UI state for a step being edited
+ */
+data class EditableStep(
+    val text: String,
+    val existingImagePath: String? = null,
+    val newImageUri: Uri? = null
+) {
+    val displayImage: Any?
+        get() = newImageUri ?: existingImagePath
+
+    fun toStepInput(): StepInput = StepInput(
+        text = text,
+        existingImagePath = existingImagePath,
+        newImageUri = newImageUri
+    )
+}
 
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
 fun EditNailContent(
     nailStyleWithGels: NailStyleWithGels?,
     allGels: List<Gel>,
-    onSave: (name: String, steps: List<String>, gelIds: List<Long>) -> Unit,
+    onSave: (
+        name: String,
+        steps: List<StepInput>,
+        gelIds: List<Long>,
+        mainImageUri: Uri?,
+        existingMainImagePath: String?
+    ) -> Unit,
     modifier: Modifier = Modifier
 ) {
-    val existingSteps: List<String> = nailStyleWithGels?.let {
+    val existingSteps: List<StepWithImage> = nailStyleWithGels?.let {
         NailStyleViewModel.parseSteps(it.nailStyle.steps)
     } ?: emptyList()
 
     val existingGelIds: List<Long> = nailStyleWithGels?.gels?.map { it.id } ?: emptyList()
+    val existingMainImagePath = nailStyleWithGels?.nailStyle?.imagePath
 
     var name by rememberSaveable { mutableStateOf(nailStyleWithGels?.nailStyle?.name ?: "") }
-    var steps by remember { mutableStateOf(existingSteps) }
+    var steps by remember {
+        mutableStateOf(existingSteps.map { EditableStep(it.text, it.imagePath) })
+    }
     var selectedGelIds by remember { mutableStateOf(existingGelIds) }
+    var selectedMainImageUri by rememberSaveable { mutableStateOf<Uri?>(null) }
 
     var nameError by rememberSaveable { mutableStateOf(false) }
+
+    // Track which step is waiting for an image
+    var pendingStepImageIndex by remember { mutableIntStateOf(-1) }
+
+    val mainImagePickerLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.GetContent()
+    ) { uri: Uri? ->
+        if (uri != null) {
+            selectedMainImageUri = uri
+        }
+    }
+
+    val stepImagePickerLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.GetContent()
+    ) { uri: Uri? ->
+        if (uri != null && pendingStepImageIndex >= 0 && pendingStepImageIndex < steps.size) {
+            steps = steps.toMutableList().apply {
+                val step = this[pendingStepImageIndex]
+                this[pendingStepImageIndex] = step.copy(newImageUri = uri)
+            }
+        }
+        pendingStepImageIndex = -1
+    }
+
+    val displayMainImage: Any? = selectedMainImageUri ?: existingMainImagePath
 
     Column(
         modifier = modifier
@@ -73,6 +135,57 @@ fun EditNailContent(
             .padding(16.dp)
             .verticalScroll(rememberScrollState())
     ) {
+        // Main finished image section
+        Text(
+            text = "Finished Result Image",
+            style = MaterialTheme.typography.titleSmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant
+        )
+        Spacer(modifier = Modifier.height(8.dp))
+
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(200.dp)
+                .clip(RoundedCornerShape(12.dp))
+                .background(MaterialTheme.colorScheme.surfaceVariant)
+                .border(
+                    width = 1.dp,
+                    color = MaterialTheme.colorScheme.outline,
+                    shape = RoundedCornerShape(12.dp)
+                )
+                .clickable { mainImagePickerLauncher.launch("image/*") },
+            contentAlignment = Alignment.Center
+        ) {
+            if (displayMainImage != null) {
+                AsyncImage(
+                    model = displayMainImage,
+                    contentDescription = "Main nail style image",
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .clip(RoundedCornerShape(12.dp)),
+                    contentScale = ContentScale.Crop
+                )
+            } else {
+                Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                    Icon(
+                        imageVector = Icons.Default.Add,
+                        contentDescription = "Add image",
+                        modifier = Modifier.size(48.dp),
+                        tint = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                    Spacer(modifier = Modifier.height(8.dp))
+                    Text(
+                        text = "Tap to add finished result photo",
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
+            }
+        }
+
+        Spacer(modifier = Modifier.height(24.dp))
+
         // Name field
         OutlinedTextField(
             value = name,
@@ -99,23 +212,34 @@ fun EditNailContent(
         Spacer(modifier = Modifier.height(8.dp))
 
         steps.forEachIndexed { index, step ->
-            StepInputField(
+            StepInputFieldWithImage(
                 stepNumber = index + 1,
-                value = step,
+                step = step,
                 allGels = allGels,
-                onValueChange = { newValue ->
-                    steps = steps.toMutableList().apply { set(index, newValue) }
+                onTextChange = { newText ->
+                    steps = steps.toMutableList().apply {
+                        this[index] = this[index].copy(text = newText)
+                    }
                 },
                 onGelSelected = { gelId ->
                     if (gelId !in selectedGelIds) {
                         selectedGelIds = selectedGelIds + gelId
                     }
                 },
+                onAddImage = {
+                    pendingStepImageIndex = index
+                    stepImagePickerLauncher.launch("image/*")
+                },
+                onRemoveImage = {
+                    steps = steps.toMutableList().apply {
+                        this[index] = this[index].copy(existingImagePath = null, newImageUri = null)
+                    }
+                },
                 onRemove = {
                     steps = steps.toMutableList().apply { removeAt(index) }
                 }
             )
-            Spacer(modifier = Modifier.height(8.dp))
+            Spacer(modifier = Modifier.height(12.dp))
         }
 
         // Add step button
@@ -123,7 +247,7 @@ fun EditNailContent(
             modifier = Modifier
                 .fillMaxWidth()
                 .clickable {
-                    steps = steps + ""
+                    steps = steps + EditableStep("")
                 },
             shape = RoundedCornerShape(8.dp),
             color = MaterialTheme.colorScheme.surfaceVariant
@@ -205,8 +329,16 @@ fun EditNailContent(
                 nameError = !isNameValid
 
                 if (isNameValid) {
-                    val filteredSteps = steps.filter { it.isNotBlank() }
-                    onSave(name.trim(), filteredSteps, selectedGelIds)
+                    val filteredSteps = steps
+                        .filter { it.text.isNotBlank() }
+                        .map { it.toStepInput() }
+                    onSave(
+                        name.trim(),
+                        filteredSteps,
+                        selectedGelIds,
+                        selectedMainImageUri,
+                        existingMainImagePath
+                    )
                 }
             },
             modifier = Modifier.fillMaxWidth()
@@ -217,97 +349,181 @@ fun EditNailContent(
 }
 
 @Composable
-private fun StepInputField(
+private fun StepInputFieldWithImage(
     stepNumber: Int,
-    value: String,
+    step: EditableStep,
     allGels: List<Gel>,
-    onValueChange: (String) -> Unit,
+    onTextChange: (String) -> Unit,
     onGelSelected: (Long) -> Unit,
+    onAddImage: () -> Unit,
+    onRemoveImage: () -> Unit,
     onRemove: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     var showDropdown by remember { mutableStateOf(false) }
     var dropdownGels by remember { mutableStateOf<List<Gel>>(emptyList()) }
-    var atPosition by remember { mutableStateOf(-1) }
+    var atPosition by remember { mutableIntStateOf(-1) }
 
-    Box(modifier = modifier) {
-        Row(
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            OutlinedTextField(
-                value = value,
-                onValueChange = { newValue ->
-                    onValueChange(newValue)
+    Surface(
+        modifier = modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(12.dp),
+        color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)
+    ) {
+        Column(modifier = Modifier.padding(12.dp)) {
+            Row(
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(
+                    text = "Step $stepNumber",
+                    style = MaterialTheme.typography.labelMedium,
+                    color = MaterialTheme.colorScheme.primary,
+                    modifier = Modifier.weight(1f)
+                )
+                IconButton(
+                    onClick = onRemove,
+                    modifier = Modifier.size(24.dp)
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Close,
+                        contentDescription = "Remove step",
+                        modifier = Modifier.size(18.dp)
+                    )
+                }
+            }
 
-                    // Check for @ character to trigger autocomplete
-                    val lastAtIndex = newValue.lastIndexOf('@')
-                    if (lastAtIndex >= 0) {
-                        val afterAt = newValue.substring(lastAtIndex + 1)
-                        // Check if we're still typing after @
-                        if (!afterAt.contains(' ') && afterAt.length < 20) {
-                            atPosition = lastAtIndex
-                            dropdownGels = if (afterAt.isEmpty()) {
-                                allGels
-                            } else {
-                                allGels.filter {
-                                    it.name.contains(afterAt, ignoreCase = true)
+            Spacer(modifier = Modifier.height(8.dp))
+
+            // Step image (optional)
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(120.dp)
+                    .clip(RoundedCornerShape(8.dp))
+                    .background(MaterialTheme.colorScheme.surface)
+                    .border(
+                        width = 1.dp,
+                        color = MaterialTheme.colorScheme.outline.copy(alpha = 0.5f),
+                        shape = RoundedCornerShape(8.dp)
+                    )
+                    .clickable { onAddImage() },
+                contentAlignment = Alignment.Center
+            ) {
+                if (step.displayImage != null) {
+                    Box {
+                        AsyncImage(
+                            model = step.displayImage,
+                            contentDescription = "Step $stepNumber image",
+                            modifier = Modifier
+                                .fillMaxSize()
+                                .clip(RoundedCornerShape(8.dp)),
+                            contentScale = ContentScale.Crop
+                        )
+                        // Remove image button
+                        IconButton(
+                            onClick = onRemoveImage,
+                            modifier = Modifier
+                                .align(Alignment.TopEnd)
+                                .padding(4.dp)
+                                .size(28.dp)
+                                .background(
+                                    MaterialTheme.colorScheme.surface.copy(alpha = 0.8f),
+                                    CircleShape
+                                )
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.Close,
+                                contentDescription = "Remove image",
+                                modifier = Modifier.size(16.dp),
+                                tint = MaterialTheme.colorScheme.error
+                            )
+                        }
+                    }
+                } else {
+                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                        Icon(
+                            imageVector = Icons.Default.Add,
+                            contentDescription = "Add step image",
+                            modifier = Modifier.size(24.dp),
+                            tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f)
+                        )
+                        Spacer(modifier = Modifier.height(4.dp))
+                        Text(
+                            text = "Add step image (optional)",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f)
+                        )
+                    }
+                }
+            }
+
+            Spacer(modifier = Modifier.height(8.dp))
+
+            // Step text field
+            Box {
+                OutlinedTextField(
+                    value = step.text,
+                    onValueChange = { newValue ->
+                        onTextChange(newValue)
+
+                        // Check for @ character to trigger autocomplete
+                        val lastAtIndex = newValue.lastIndexOf('@')
+                        if (lastAtIndex >= 0) {
+                            val afterAt = newValue.substring(lastAtIndex + 1)
+                            if (!afterAt.contains(' ') && afterAt.length < 20) {
+                                atPosition = lastAtIndex
+                                dropdownGels = if (afterAt.isEmpty()) {
+                                    allGels
+                                } else {
+                                    allGels.filter {
+                                        it.name.contains(afterAt, ignoreCase = true)
+                                    }
                                 }
+                                showDropdown = dropdownGels.isNotEmpty()
+                            } else {
+                                showDropdown = false
                             }
-                            showDropdown = dropdownGels.isNotEmpty()
                         } else {
                             showDropdown = false
                         }
-                    } else {
-                        showDropdown = false
-                    }
-                },
-                label = { Text("Step $stepNumber") },
-                modifier = Modifier.weight(1f),
-                placeholder = { Text("Type @ to insert a gel") }
-            )
-
-            Spacer(modifier = Modifier.width(8.dp))
-
-            IconButton(onClick = onRemove) {
-                Icon(
-                    imageVector = Icons.Default.Close,
-                    contentDescription = "Remove step"
-                )
-            }
-        }
-
-        DropdownMenu(
-            expanded = showDropdown,
-            onDismissRequest = { showDropdown = false },
-            properties = PopupProperties(focusable = false),
-            modifier = Modifier
-                .heightIn(max = 200.dp)
-        ) {
-            dropdownGels.forEach { gel ->
-                DropdownMenuItem(
-                    text = {
-                        Row(verticalAlignment = Alignment.CenterVertically) {
-                            Box(
-                                modifier = Modifier
-                                    .size(16.dp)
-                                    .clip(CircleShape)
-                                    .background(parseColor(gel.colorCode))
-                            )
-                            Spacer(modifier = Modifier.width(8.dp))
-                            Text(gel.name)
-                        }
                     },
-                    onClick = {
-                        // Replace @query with gel name
-                        if (atPosition >= 0) {
-                            val beforeAt = value.substring(0, atPosition)
-                            val newValue = "$beforeAt${gel.name}"
-                            onValueChange(newValue)
-                            onGelSelected(gel.id)
-                        }
-                        showDropdown = false
-                    }
+                    label = { Text("Description") },
+                    modifier = Modifier.fillMaxWidth(),
+                    placeholder = { Text("Type @ to insert a gel") },
+                    minLines = 2
                 )
+
+                DropdownMenu(
+                    expanded = showDropdown,
+                    onDismissRequest = { showDropdown = false },
+                    properties = PopupProperties(focusable = false),
+                    modifier = Modifier.heightIn(max = 200.dp)
+                ) {
+                    dropdownGels.forEach { gel ->
+                        DropdownMenuItem(
+                            text = {
+                                Row(verticalAlignment = Alignment.CenterVertically) {
+                                    Box(
+                                        modifier = Modifier
+                                            .size(16.dp)
+                                            .clip(CircleShape)
+                                            .background(parseColor(gel.colorCode))
+                                    )
+                                    Spacer(modifier = Modifier.width(8.dp))
+                                    Text(gel.name)
+                                }
+                            },
+                            onClick = {
+                                if (atPosition >= 0) {
+                                    val beforeAt = step.text.substring(0, atPosition)
+                                    val newValue = "$beforeAt${gel.name}"
+                                    onTextChange(newValue)
+                                    onGelSelected(gel.id)
+                                }
+                                showDropdown = false
+                            }
+                        )
+                    }
+                }
             }
         }
     }
