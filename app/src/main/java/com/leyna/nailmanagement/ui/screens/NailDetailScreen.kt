@@ -1,5 +1,6 @@
 package com.leyna.nailmanagement.ui.screens
 
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
@@ -37,6 +38,8 @@ fun NailDetailContent(
     nailStyleWithGels: NailStyleWithGels,
     allGels: List<Gel>,
     onEditClick: () -> Unit,
+    onGelClick: (Long) -> Unit,
+    showEditButton: Boolean = true,
 ) {
     val nailStyle = nailStyleWithGels.nailStyle
     val gels = nailStyleWithGels.gels
@@ -85,7 +88,8 @@ fun NailDetailContent(
                 gels.forEach { gel ->
                     Surface(
                         shape = RoundedCornerShape(16.dp),
-                        color = MaterialTheme.colorScheme.primaryContainer
+                        color = MaterialTheme.colorScheme.primaryContainer,
+                        modifier = Modifier.clickable { onGelClick(gel.id) }
                     ) {
                         Text(
                             text = gel.name,
@@ -151,11 +155,13 @@ fun NailDetailContent(
 
         Spacer(modifier = Modifier.weight(1f))
 
-        Button(
-            onClick = onEditClick,
-            modifier = Modifier.fillMaxWidth()
-        ) {
-            Text("Edit")
+        if (showEditButton) {
+            Button(
+                onClick = onEditClick,
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Text("Edit")
+            }
         }
     }
 }
