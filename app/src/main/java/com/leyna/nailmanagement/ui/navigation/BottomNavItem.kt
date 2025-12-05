@@ -10,15 +10,26 @@ sealed class BottomNavItem(
     val label: String,
     val icon: ImageVector
 ) {
+    // Route and label constants
+    private object Routes {
+        const val GEL = "gel"
+        const val NAIL = "nail"
+    }
+
+    private object Labels {
+        const val GEL = "Gel"
+        const val NAIL = "Nail"
+    }
+
     data object Gel : BottomNavItem(
-        route = "gel",
-        label = "Gel",
+        route = Routes.GEL,
+        label = Labels.GEL,
         icon = Icons.Default.Star
     )
 
     data object Nail : BottomNavItem(
-        route = "nail",
-        label = "Nail",
+        route = Routes.NAIL,
+        label = Labels.NAIL,
         icon = Icons.Default.Face
     )
 }

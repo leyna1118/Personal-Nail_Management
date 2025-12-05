@@ -36,6 +36,13 @@ class NailStyleViewModel(application: Application) : AndroidViewModel(applicatio
     val allNailStylesWithGels: StateFlow<List<NailStyleWithGels>>
     val allGelsWithNailStyles: StateFlow<List<GelWithNailStyles>>
 
+    private object ImageStorage {
+        const val DIRECTORY = "nail_images"
+        const val MAIN_IMAGE_PREFIX = "nail_main"
+        const val STEP_IMAGE_PREFIX = "nail_step"
+        const val FILE_EXTENSION = ".jpg"
+    }
+
     init {
         val nailStyleDao = AppDatabase.getDatabase(application).nailStyleDao()
         repository = NailStyleRepository(nailStyleDao)
@@ -68,7 +75,7 @@ class NailStyleViewModel(application: Application) : AndroidViewModel(applicatio
         mainImageUri: Uri?
     ) {
         viewModelScope.launch {
-            val mainImagePath = mainImageUri?.let { copyImageToInternalStorage(it, "nail_main") }
+            val mainImagePath = mainImageUri?.let { copyImageToInternalStorage(it, ImageStorage.MAIN_IMAGE_PREFIX) }
             val processedSteps = processSteps(steps)
             val stepsString = encodeSteps(processedSteps)
             val nailStyle = NailStyle(name = name, steps = stepsString, imagePath = mainImagePath)
@@ -86,7 +93,7 @@ class NailStyleViewModel(application: Application) : AndroidViewModel(applicatio
     ) {
         viewModelScope.launch {
             val mainImagePath = if (mainImageUri != null) {
-                copyImageToInternalStorage(mainImageUri, "nail_main")
+                copyImageToInternalStorage(mainImageUri, ImageStorage.MAIN_IMAGE_PREFIX)
             } else {
                 existingMainImagePath
             }
@@ -100,7 +107,7 @@ class NailStyleViewModel(application: Application) : AndroidViewModel(applicatio
     private suspend fun processSteps(steps: List<StepInput>): List<StepWithImage> {
         return steps.map { step ->
             val imagePath = if (step.newImageUri != null) {
-                copyImageToInternalStorage(step.newImageUri, "nail_step")
+                copyImageToInternalStorage(step.newImageUri, ImageStorage.STEP_IMAGE_PREFIX)
             } else {
                 step.existingImagePath
             }
@@ -111,12 +118,12 @@ class NailStyleViewModel(application: Application) : AndroidViewModel(applicatio
     private suspend fun copyImageToInternalStorage(uri: Uri, prefix: String): String? {
         return withContext(Dispatchers.IO) {
             try {
-                val imagesDir = File(context.filesDir, "nail_images")
+                val imagesDir = File(context.filesDir, ImageStorage.DIRECTORY)
                 if (!imagesDir.exists()) {
                     imagesDir.mkdirs()
                 }
 
-                val fileName = "${prefix}_${UUID.randomUUID()}.jpg"
+                val fileName = "${prefix}_${UUID.randomUUID()}${ImageStorage.FILE_EXTENSION}"
                 val destinationFile = File(imagesDir, fileName)
 
                 context.contentResolver.openInputStream(uri)?.use { inputStream ->
@@ -151,15 +158,6 @@ class NailStyleViewModel(application: Application) : AndroidViewModel(applicatio
         fun encodeSteps(steps: List<StepWithImage>): String {
             return steps.joinToString(STEP_SEPARATOR) { step ->
                 "${step.text}$FIELD_SEPARATOR${step.imagePath ?: ""}"
-            }
-        }
-
-        // Legacy support for old format (plain text steps)
-        fun parseStepsLegacy(stepsString: String): List<String> {
-            return if (stepsString.isBlank()) {
-                emptyList()
-            } else {
-                stepsString.split(STEP_SEPARATOR).map { it.split(FIELD_SEPARATOR).first() }
             }
         }
     }

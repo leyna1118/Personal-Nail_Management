@@ -42,19 +42,43 @@ import com.leyna.nailmanagement.ui.viewmodel.GelViewModel
 import com.leyna.nailmanagement.ui.viewmodel.NailStyleViewModel
 
 object Routes {
-    const val GEL_LIST = "gel"
-    const val NAIL_LIST = "nail"
-    const val GEL_ADD = "gel_add"
-    const val GEL_DETAIL = "gel_detail/{gelId}?fromLabel={fromLabel}"
-    const val GEL_EDIT = "gel_edit/{gelId}"
-    const val NAIL_ADD = "nail_add"
-    const val NAIL_DETAIL = "nail_detail/{nailId}?fromLabel={fromLabel}"
-    const val NAIL_EDIT = "nail_edit/{nailId}"
+    // Argument keys - exposed for use in navArgument and argument extraction
+    object Args {
+        const val GEL_ID = "gelId"
+        const val NAIL_ID = "nailId"
+        const val FROM_LABEL = "fromLabel"
+    }
 
-    fun gelDetail(gelId: Long, fromLabel: Boolean = false) = "gel_detail/$gelId?fromLabel=$fromLabel"
-    fun gelEdit(gelId: Long) = "gel_edit/$gelId"
-    fun nailDetail(nailId: Long, fromLabel: Boolean = false) = "nail_detail/$nailId?fromLabel=$fromLabel"
-    fun nailEdit(nailId: Long) = "nail_edit/$nailId"
+    // Base route names
+    private object Base {
+        const val GEL_ADD = "gel_add"
+        const val GEL_DETAIL = "gel_detail"
+        const val GEL_EDIT = "gel_edit"
+        const val NAIL_ADD = "nail_add"
+        const val NAIL_DETAIL = "nail_detail"
+        const val NAIL_EDIT = "nail_edit"
+    }
+
+    // Route patterns for NavHost composable registration
+    const val GEL_ADD = Base.GEL_ADD
+    const val GEL_DETAIL = "${Base.GEL_DETAIL}/{${Args.GEL_ID}}?${Args.FROM_LABEL}={${Args.FROM_LABEL}}"
+    const val GEL_EDIT = "${Base.GEL_EDIT}/{${Args.GEL_ID}}"
+    const val NAIL_ADD = Base.NAIL_ADD
+    const val NAIL_DETAIL = "${Base.NAIL_DETAIL}/{${Args.NAIL_ID}}?${Args.FROM_LABEL}={${Args.FROM_LABEL}}"
+    const val NAIL_EDIT = "${Base.NAIL_EDIT}/{${Args.NAIL_ID}}"
+
+    // Route builders for navigation
+    fun gelDetail(gelId: Long, fromLabel: Boolean = false) =
+        "${Base.GEL_DETAIL}/$gelId?${Args.FROM_LABEL}=$fromLabel"
+
+    fun gelEdit(gelId: Long) =
+        "${Base.GEL_EDIT}/$gelId"
+
+    fun nailDetail(nailId: Long, fromLabel: Boolean = false) =
+        "${Base.NAIL_DETAIL}/$nailId?${Args.FROM_LABEL}=$fromLabel"
+
+    fun nailEdit(nailId: Long) =
+        "${Base.NAIL_EDIT}/$nailId"
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -80,15 +104,15 @@ fun MainNavigation(
     val isMainScreen = currentRoute in listOf(BottomNavItem.Gel.route, BottomNavItem.Nail.route)
 
     // Determine title based on current route
-    val currentTitle = when {
-        currentRoute == BottomNavItem.Gel.route -> "Gel"
-        currentRoute == BottomNavItem.Nail.route -> "Nail"
-        currentRoute == Routes.GEL_ADD -> "Add Gel"
-        currentRoute == Routes.GEL_DETAIL -> "Gel Details"
-        currentRoute == Routes.GEL_EDIT -> "Edit Gel"
-        currentRoute == Routes.NAIL_ADD -> "Add Nail Style"
-        currentRoute == Routes.NAIL_DETAIL -> "Nail Details"
-        currentRoute == Routes.NAIL_EDIT -> "Edit Nail Style"
+    val currentTitle = when (currentRoute) {
+        BottomNavItem.Gel.route -> "Gel"
+        BottomNavItem.Nail.route -> "Nail"
+        Routes.GEL_ADD -> "Add Gel"
+        Routes.GEL_DETAIL -> "Gel Details"
+        Routes.GEL_EDIT -> "Edit Gel"
+        Routes.NAIL_ADD -> "Add Nail Style"
+        Routes.NAIL_DETAIL -> "Nail Details"
+        Routes.NAIL_EDIT -> "Edit Nail Style"
         else -> "Gel"
     }
 
@@ -193,12 +217,12 @@ fun MainNavigation(
             composable(
                 route = Routes.GEL_DETAIL,
                 arguments = listOf(
-                    navArgument("gelId") { type = NavType.LongType },
-                    navArgument("fromLabel") { type = NavType.BoolType; defaultValue = false }
+                    navArgument(Routes.Args.GEL_ID) { type = NavType.LongType },
+                    navArgument(Routes.Args.FROM_LABEL) { type = NavType.BoolType; defaultValue = false }
                 )
             ) { backStackEntry ->
-                val gelId = backStackEntry.arguments?.getLong("gelId") ?: 0L
-                val fromLabel = backStackEntry.arguments?.getBoolean("fromLabel") ?: false
+                val gelId = backStackEntry.arguments?.getLong(Routes.Args.GEL_ID) ?: 0L
+                val fromLabel = backStackEntry.arguments?.getBoolean(Routes.Args.FROM_LABEL) ?: false
                 val gelWithNailStyles by nailStyleViewModel.getGelWithNailStylesById(gelId)
                     .collectAsState(initial = null)
 
@@ -225,9 +249,9 @@ fun MainNavigation(
             }
             composable(
                 route = Routes.GEL_EDIT,
-                arguments = listOf(navArgument("gelId") { type = NavType.LongType })
+                arguments = listOf(navArgument(Routes.Args.GEL_ID) { type = NavType.LongType })
             ) { backStackEntry ->
-                val gelId = backStackEntry.arguments?.getLong("gelId") ?: 0L
+                val gelId = backStackEntry.arguments?.getLong(Routes.Args.GEL_ID) ?: 0L
                 val gel by gelViewModel.getGelById(gelId).collectAsState(initial = null)
 
                 gel?.let { gelItem ->
@@ -273,12 +297,12 @@ fun MainNavigation(
             composable(
                 route = Routes.NAIL_DETAIL,
                 arguments = listOf(
-                    navArgument("nailId") { type = NavType.LongType },
-                    navArgument("fromLabel") { type = NavType.BoolType; defaultValue = false }
+                    navArgument(Routes.Args.NAIL_ID) { type = NavType.LongType },
+                    navArgument(Routes.Args.FROM_LABEL) { type = NavType.BoolType; defaultValue = false }
                 )
             ) { backStackEntry ->
-                val nailId = backStackEntry.arguments?.getLong("nailId") ?: 0L
-                val fromLabel = backStackEntry.arguments?.getBoolean("fromLabel") ?: false
+                val nailId = backStackEntry.arguments?.getLong(Routes.Args.NAIL_ID) ?: 0L
+                val fromLabel = backStackEntry.arguments?.getBoolean(Routes.Args.FROM_LABEL) ?: false
                 val nailStyleWithGels by nailStyleViewModel.getNailStyleWithGelsById(nailId)
                     .collectAsState(initial = null)
 
@@ -305,9 +329,9 @@ fun MainNavigation(
             }
             composable(
                 route = Routes.NAIL_EDIT,
-                arguments = listOf(navArgument("nailId") { type = NavType.LongType })
+                arguments = listOf(navArgument(Routes.Args.NAIL_ID) { type = NavType.LongType })
             ) { backStackEntry ->
-                val nailId = backStackEntry.arguments?.getLong("nailId") ?: 0L
+                val nailId = backStackEntry.arguments?.getLong(Routes.Args.NAIL_ID) ?: 0L
                 val nailStyleWithGels by nailStyleViewModel.getNailStyleWithGelsById(nailId)
                     .collectAsState(initial = null)
 

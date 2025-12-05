@@ -23,6 +23,12 @@ class GelViewModel(application: Application) : AndroidViewModel(application) {
 
     val allGels: StateFlow<List<Gel>>
 
+    private object ImageStorage {
+        const val DIRECTORY = "gel_images"
+        const val FILE_PREFIX = "gel_"
+        const val FILE_EXTENSION = ".jpg"
+    }
+
     init {
         val gelDao = AppDatabase.getDatabase(application).gelDao()
         repository = GelRepository(gelDao)
@@ -61,12 +67,12 @@ class GelViewModel(application: Application) : AndroidViewModel(application) {
     private suspend fun copyImageToInternalStorage(uri: Uri): String? {
         return withContext(Dispatchers.IO) {
             try {
-                val imagesDir = File(context.filesDir, "gel_images")
+                val imagesDir = File(context.filesDir, ImageStorage.DIRECTORY)
                 if (!imagesDir.exists()) {
                     imagesDir.mkdirs()
                 }
 
-                val fileName = "gel_${UUID.randomUUID()}.jpg"
+                val fileName = "${ImageStorage.FILE_PREFIX}${UUID.randomUUID()}${ImageStorage.FILE_EXTENSION}"
                 val destinationFile = File(imagesDir, fileName)
 
                 context.contentResolver.openInputStream(uri)?.use { inputStream ->
