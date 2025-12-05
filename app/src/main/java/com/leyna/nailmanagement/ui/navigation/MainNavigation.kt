@@ -23,6 +23,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.nestedscroll.nestedScroll
+import androidx.compose.ui.platform.LocalContext
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavDestination.Companion.hierarchy
 import androidx.navigation.NavGraph.Companion.findStartDestination
@@ -40,6 +41,7 @@ import com.leyna.nailmanagement.ui.screens.NailDetailContent
 import com.leyna.nailmanagement.ui.screens.NailScreenContent
 import com.leyna.nailmanagement.ui.viewmodel.GelViewModel
 import com.leyna.nailmanagement.ui.viewmodel.NailStyleViewModel
+import com.leyna.nailmanagement.ui.viewmodel.ViewModelFactory
 
 object Routes {
     // Argument keys - exposed for use in navArgument and argument extraction
@@ -84,10 +86,13 @@ object Routes {
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun MainNavigation(
-    modifier: Modifier = Modifier,
-    gelViewModel: GelViewModel = viewModel(),
-    nailStyleViewModel: NailStyleViewModel = viewModel()
+    modifier: Modifier = Modifier
 ) {
+    val context = LocalContext.current
+    val viewModelFactory = ViewModelFactory(context)
+    val gelViewModel: GelViewModel = viewModel(factory = viewModelFactory)
+    val nailStyleViewModel: NailStyleViewModel = viewModel(factory = viewModelFactory)
+
     val navController = rememberNavController()
     val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior()
 

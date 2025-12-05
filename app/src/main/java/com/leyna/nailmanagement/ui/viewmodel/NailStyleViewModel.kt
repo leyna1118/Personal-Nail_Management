@@ -1,24 +1,19 @@
 package com.leyna.nailmanagement.ui.viewmodel
 
-import android.app.Application
 import android.net.Uri
-import androidx.lifecycle.AndroidViewModel
+import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.leyna.nailmanagement.data.database.AppDatabase
 import com.leyna.nailmanagement.data.entity.GelWithNailStyles
 import com.leyna.nailmanagement.data.entity.NailStyle
 import com.leyna.nailmanagement.data.entity.NailStyleWithGels
 import com.leyna.nailmanagement.data.entity.StepWithImage
+import com.leyna.nailmanagement.data.repository.ImageRepository
 import com.leyna.nailmanagement.data.repository.NailStyleRepository
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
-import java.io.File
-import java.util.UUID
 
 /**
  * Represents step data from the UI with potential new image URI
@@ -29,38 +24,24 @@ data class StepInput(
     val newImageUri: Uri? = null
 )
 
-class NailStyleViewModel(application: Application) : AndroidViewModel(application) {
-    private val repository: NailStyleRepository
-    private val context = application.applicationContext
+class NailStyleViewModel(
+    private val repository: NailStyleRepository,
+    private val imageRepository: ImageRepository
+) : ViewModel() {
 
-    val allNailStylesWithGels: StateFlow<List<NailStyleWithGels>>
-    val allGelsWithNailStyles: StateFlow<List<GelWithNailStyles>>
+    val allNailStylesWithGels: StateFlow<List<NailStyleWithGels>> = repository.getAllNailStylesWithGels()
+        .stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.WhileSubscribed(5000),
+            initialValue = emptyList()
+        )
 
-    private object ImageStorage {
-        const val DIRECTORY = "nail_images"
-        const val MAIN_IMAGE_PREFIX = "nail_main"
-        const val STEP_IMAGE_PREFIX = "nail_step"
-        const val FILE_EXTENSION = ".jpg"
-    }
-
-    init {
-        val nailStyleDao = AppDatabase.getDatabase(application).nailStyleDao()
-        repository = NailStyleRepository(nailStyleDao)
-
-        allNailStylesWithGels = repository.getAllNailStylesWithGels()
-            .stateIn(
-                scope = viewModelScope,
-                started = SharingStarted.WhileSubscribed(5000),
-                initialValue = emptyList()
-            )
-
-        allGelsWithNailStyles = repository.getAllGelsWithNailStyles()
-            .stateIn(
-                scope = viewModelScope,
-                started = SharingStarted.WhileSubscribed(5000),
-                initialValue = emptyList()
-            )
-    }
+    val allGelsWithNailStyles: StateFlow<List<GelWithNailStyles>> = repository.getAllGelsWithNailStyles()
+        .stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.WhileSubscribed(5000),
+            initialValue = emptyList()
+        )
 
     fun getNailStyleWithGelsById(id: Long): Flow<NailStyleWithGels?> =
         repository.getNailStyleWithGelsById(id)
@@ -75,7 +56,7 @@ class NailStyleViewModel(application: Application) : AndroidViewModel(applicatio
         mainImageUri: Uri?
     ) {
         viewModelScope.launch {
-            val mainImagePath = mainImageUri?.let { copyImageToInternalStorage(it, ImageStorage.MAIN_IMAGE_PREFIX) }
+            val mainImagePath = mainImageUri?.let { imageRepository.copyNailMainImageToStorage(it) }
             val processedSteps = processSteps(steps)
             val stepsString = encodeSteps(processedSteps)
             val nailStyle = NailStyle(name = name, steps = stepsString, imagePath = mainImagePath)
@@ -93,7 +74,7 @@ class NailStyleViewModel(application: Application) : AndroidViewModel(applicatio
     ) {
         viewModelScope.launch {
             val mainImagePath = if (mainImageUri != null) {
-                copyImageToInternalStorage(mainImageUri, ImageStorage.MAIN_IMAGE_PREFIX)
+                imageRepository.copyNailMainImageToStorage(mainImageUri)
             } else {
                 existingMainImagePath
             }
@@ -107,36 +88,11 @@ class NailStyleViewModel(application: Application) : AndroidViewModel(applicatio
     private suspend fun processSteps(steps: List<StepInput>): List<StepWithImage> {
         return steps.map { step ->
             val imagePath = if (step.newImageUri != null) {
-                copyImageToInternalStorage(step.newImageUri, ImageStorage.STEP_IMAGE_PREFIX)
+                imageRepository.copyNailStepImageToStorage(step.newImageUri)
             } else {
                 step.existingImagePath
             }
             StepWithImage(text = step.text, imagePath = imagePath)
-        }
-    }
-
-    private suspend fun copyImageToInternalStorage(uri: Uri, prefix: String): String? {
-        return withContext(Dispatchers.IO) {
-            try {
-                val imagesDir = File(context.filesDir, ImageStorage.DIRECTORY)
-                if (!imagesDir.exists()) {
-                    imagesDir.mkdirs()
-                }
-
-                val fileName = "${prefix}_${UUID.randomUUID()}${ImageStorage.FILE_EXTENSION}"
-                val destinationFile = File(imagesDir, fileName)
-
-                context.contentResolver.openInputStream(uri)?.use { inputStream ->
-                    destinationFile.outputStream().use { outputStream ->
-                        inputStream.copyTo(outputStream)
-                    }
-                }
-
-                destinationFile.absolutePath
-            } catch (e: Exception) {
-                e.printStackTrace()
-                null
-            }
         }
     }
 
