@@ -7,12 +7,12 @@ import androidx.room.Relation
 data class GelWithNailStyles(
     @Embedded val gel: Gel,
     @Relation(
-        parentColumn = "id",
-        entityColumn = "id",
+        parentColumn = Gel.COL_ID,
+        entityColumn = NailStyle.COL_ID,
         associateBy = Junction(
             value = NailStyleGelCrossRef::class,
-            parentColumn = "gelId",
-            entityColumn = "nailStyleId"
+            parentColumn = NailStyleGelCrossRef.COL_GEL_ID,
+            entityColumn = NailStyleGelCrossRef.COL_NAIL_STYLE_ID
         )
     )
     val nailStyles: List<NailStyle>

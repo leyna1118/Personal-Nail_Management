@@ -20,6 +20,8 @@ abstract class AppDatabase : RoomDatabase() {
     abstract fun nailStyleDao(): NailStyleDao
 
     companion object {
+        private const val DATABASE_NAME = "nail_management_database"
+
         @Volatile
         private var INSTANCE: AppDatabase? = null
 
@@ -28,7 +30,7 @@ abstract class AppDatabase : RoomDatabase() {
                 val instance = Room.databaseBuilder(
                     context.applicationContext,
                     AppDatabase::class.java,
-                    "nail_management_database"
+                    DATABASE_NAME
                 )
                     .fallbackToDestructiveMigration()
                     .build()

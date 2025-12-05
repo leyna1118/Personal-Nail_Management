@@ -206,6 +206,7 @@ fun EditNailContent(
             StepInputFieldWithImage(
                 stepNumber = index + 1,
                 step = step,
+                allGels = allGels,
                 onTextChange = { newText ->
                     steps = steps.toMutableList().apply {
                         this[index] = this[index].copy(text = newText)
@@ -286,6 +287,7 @@ fun EditNailContent(
 private fun StepInputFieldWithImage(
     stepNumber: Int,
     step: EditableStep,
+    allGels: List<Gel>,
     onTextChange: (String) -> Unit,
     onAddImage: () -> Unit,
     onRemoveImage: () -> Unit,

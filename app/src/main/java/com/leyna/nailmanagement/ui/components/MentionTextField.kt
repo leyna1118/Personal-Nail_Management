@@ -42,7 +42,7 @@ import java.time.format.TextStyle
  * - Display: "Apply @RedGel then @BlueGel"
  */
 object MentionFormat {
-    private val MENTION_PATTERN = Regex("\\[\\[gel:(\\d+)]]")
+    val MENTION_PATTERN = Regex("\\[\\[gel:(\\d+)]]")
 
     /**
      * Represents a parsed mention with its position in the storage text
