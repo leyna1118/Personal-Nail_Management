@@ -32,11 +32,11 @@ import com.leyna.nailmanagement.data.entity.GelWithNailStyles
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
 fun GelDetailContent(
+    modifier: Modifier = Modifier,
     gelWithNailStyles: GelWithNailStyles,
     onEditClick: () -> Unit,
     onNailStyleClick: (Long) -> Unit,
     showEditButton: Boolean = true,
-    modifier: Modifier = Modifier
 ) {
     val gel = gelWithNailStyles.gel
     val nailStyles = gelWithNailStyles.nailStyles
