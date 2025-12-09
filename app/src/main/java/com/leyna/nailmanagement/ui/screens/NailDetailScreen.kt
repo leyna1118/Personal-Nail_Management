@@ -25,7 +25,9 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
+import com.leyna.nailmanagement.data.entity.Gel
 import com.leyna.nailmanagement.data.entity.NailStyleWithGels
+import com.leyna.nailmanagement.ui.components.MentionText
 import com.leyna.nailmanagement.ui.viewmodel.NailStyleViewModel
 
 @OptIn(ExperimentalLayoutApi::class)
@@ -33,6 +35,7 @@ import com.leyna.nailmanagement.ui.viewmodel.NailStyleViewModel
 fun NailDetailContent(
     modifier: Modifier = Modifier,
     nailStyleWithGels: NailStyleWithGels,
+    allGels: List<Gel>,
     onEditClick: () -> Unit,
 ) {
     val nailStyle = nailStyleWithGels.nailStyle
@@ -134,9 +137,11 @@ fun NailDetailContent(
                             Spacer(modifier = Modifier.height(8.dp))
                         }
 
-                        Text(
-                            text = step.text,
-                            style = MaterialTheme.typography.bodyMedium
+                        MentionText(
+                            modifier = modifier,
+                            storageText = step.text,
+                            allGels = allGels,
+                            onMentionClick = onGelClick,
                         )
                     }
                 }

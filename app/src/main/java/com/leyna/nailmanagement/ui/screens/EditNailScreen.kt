@@ -9,8 +9,6 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.ExperimentalLayoutApi
-import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -49,6 +47,7 @@ import coil.compose.AsyncImage
 import com.leyna.nailmanagement.data.entity.Gel
 import com.leyna.nailmanagement.data.entity.NailStyleWithGels
 import com.leyna.nailmanagement.data.entity.StepWithImage
+import com.leyna.nailmanagement.ui.components.MentionTextField
 import com.leyna.nailmanagement.ui.viewmodel.NailStyleViewModel
 import com.leyna.nailmanagement.ui.viewmodel.StepInput
 
@@ -70,7 +69,6 @@ data class EditableStep(
     )
 }
 
-@OptIn(ExperimentalLayoutApi::class)
 @Composable
 fun EditNailContent(
     nailStyleWithGels: NailStyleWithGels?,
@@ -78,7 +76,6 @@ fun EditNailContent(
     onSave: (
         name: String,
         steps: List<StepInput>,
-        gelIds: List<Long>,
         mainImageUri: Uri?,
         existingMainImagePath: String?
     ) -> Unit,
@@ -88,14 +85,12 @@ fun EditNailContent(
         NailStyleViewModel.parseSteps(it.nailStyle.steps)
     } ?: emptyList()
 
-    val existingGelIds: List<Long> = nailStyleWithGels?.gels?.map { it.id } ?: emptyList()
     val existingMainImagePath = nailStyleWithGels?.nailStyle?.imagePath
 
     var name by rememberSaveable { mutableStateOf(nailStyleWithGels?.nailStyle?.name ?: "") }
     var steps by remember {
         mutableStateOf(existingSteps.map { EditableStep(it.text, it.imagePath) })
     }
-    var selectedGelIds by remember { mutableStateOf(existingGelIds) }
     var selectedMainImageUri by rememberSaveable { mutableStateOf<Uri?>(null) }
 
     var nameError by rememberSaveable { mutableStateOf(false) }
@@ -262,56 +257,6 @@ fun EditNailContent(
 
         Spacer(modifier = Modifier.height(24.dp))
 
-        // Selected gels display
-        if (selectedGelIds.isNotEmpty()) {
-            Text(
-                text = "Selected Gels",
-                style = MaterialTheme.typography.titleSmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
-            )
-            Spacer(modifier = Modifier.height(8.dp))
-            FlowRow(
-                horizontalArrangement = Arrangement.spacedBy(6.dp),
-                verticalArrangement = Arrangement.spacedBy(6.dp)
-            ) {
-                selectedGelIds.forEach { gelId ->
-                    val gel = allGels.find { it.id == gelId }
-                    gel?.let {
-                        Surface(
-                            shape = RoundedCornerShape(16.dp),
-                            color = MaterialTheme.colorScheme.primaryContainer
-                        ) {
-                            Row(
-                                modifier = Modifier.padding(start = 10.dp, end = 4.dp, top = 4.dp, bottom = 4.dp),
-                                verticalAlignment = Alignment.CenterVertically
-                            ) {
-                                Text(
-                                    text = it.name,
-                                    style = MaterialTheme.typography.labelMedium,
-                                    color = MaterialTheme.colorScheme.onPrimaryContainer
-                                )
-                                IconButton(
-                                    onClick = {
-                                        selectedGelIds = selectedGelIds - gelId
-                                    },
-                                    modifier = Modifier.size(20.dp)
-                                ) {
-                                    Icon(
-                                        imageVector = Icons.Default.Close,
-                                        contentDescription = "Remove gel",
-                                        modifier = Modifier.size(14.dp),
-                                        tint = MaterialTheme.colorScheme.onPrimaryContainer
-                                    )
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-        }
-
-        Spacer(modifier = Modifier.height(24.dp))
-
         // Save button
         Button(
             onClick = {
@@ -325,7 +270,6 @@ fun EditNailContent(
                     onSave(
                         name.trim(),
                         filteredSteps,
-                        selectedGelIds,
                         selectedMainImageUri,
                         existingMainImagePath
                     )
@@ -442,13 +386,14 @@ private fun StepInputFieldWithImage(
 
             Spacer(modifier = Modifier.height(8.dp))
 
-            // Step text field
-            OutlinedTextField(
-                value = step.text,
-                onValueChange = { onTextChange(it) },
-                label = { Text("Description") },
+            // Step text field with mention support
+            MentionTextField(
+                storageText = step.text,
+                onStorageTextChange = onTextChange,
+                allGels = allGels,
                 modifier = Modifier.fillMaxWidth(),
-                placeholder = { Text("Describe this step") },
+                label = { Text("Description") },
+                placeholder = { Text("Type @ to insert a gel") },
                 minLines = 2
             )
         }

@@ -254,8 +254,8 @@ fun MainNavigation(
                 EditNailContent(
                     nailStyleWithGels = null,
                     allGels = gels,
-                    onSave = { name, steps, gelIds, mainImageUri, _ ->
-                        nailStyleViewModel.insertNailStyle(name, steps, gelIds, mainImageUri)
+                    onSave = { name, steps, mainImageUri, _ ->
+                        nailStyleViewModel.insertNailStyle(name, steps, mainImageUri)
                         navController.popBackStack()
                     },
                     modifier = Modifier.fillMaxSize()
@@ -272,6 +272,7 @@ fun MainNavigation(
                 nailStyleWithGels?.let { nailStyle ->
                     NailDetailContent(
                         nailStyleWithGels = nailStyle,
+                        allGels = gels,
                         onEditClick = {
                             navController.navigate(Routes.nailEdit(nailId))
                         },
@@ -298,8 +299,8 @@ fun MainNavigation(
                     EditNailContent(
                         nailStyleWithGels = nailStyle,
                         allGels = gels,
-                        onSave = { name, steps, gelIds, mainImageUri, existingMainImagePath ->
-                            nailStyleViewModel.updateNailStyle(nailId, name, steps, gelIds, mainImageUri, existingMainImagePath)
+                        onSave = { name, steps, mainImageUri, existingMainImagePath ->
+                            nailStyleViewModel.updateNailStyle(nailId, name, steps, mainImageUri, existingMainImagePath)
                             navController.popBackStack()
                         },
                         modifier = Modifier.fillMaxSize()

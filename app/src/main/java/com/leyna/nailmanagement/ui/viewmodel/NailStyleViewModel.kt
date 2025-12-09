@@ -64,15 +64,15 @@ class NailStyleViewModel(application: Application) : AndroidViewModel(applicatio
     fun insertNailStyle(
         name: String,
         steps: List<StepInput>,
-        gelIds: List<Long>,
         mainImageUri: Uri?
     ) {
         viewModelScope.launch {
             val mainImagePath = mainImageUri?.let { copyImageToInternalStorage(it, "nail_main") }
             val processedSteps = processSteps(steps)
             val stepsString = encodeSteps(processedSteps)
+            val extractedGelIds = extractGelIdsFromSteps(steps)
             val nailStyle = NailStyle(name = name, steps = stepsString, imagePath = mainImagePath)
-            repository.insertNailStyleWithGels(nailStyle, gelIds)
+            repository.insertNailStyleWithGels(nailStyle, extractedGelIds)
         }
     }
 
@@ -80,7 +80,6 @@ class NailStyleViewModel(application: Application) : AndroidViewModel(applicatio
         id: Long,
         name: String,
         steps: List<StepInput>,
-        gelIds: List<Long>,
         mainImageUri: Uri?,
         existingMainImagePath: String?
     ) {
@@ -92,9 +91,19 @@ class NailStyleViewModel(application: Application) : AndroidViewModel(applicatio
             }
             val processedSteps = processSteps(steps)
             val stepsString = encodeSteps(processedSteps)
+            val extractedGelIds = extractGelIdsFromSteps(steps)
             val nailStyle = NailStyle(id = id, name = name, steps = stepsString, imagePath = mainImagePath)
-            repository.updateNailStyleWithGels(nailStyle, gelIds)
+            repository.updateNailStyleWithGels(nailStyle, extractedGelIds)
         }
+    }
+
+    private fun extractGelIdsFromSteps(steps: List<StepInput>): List<Long> {
+        val mentionPattern = Regex("\\[\\[gel:(\\d+)]]")
+        return steps.flatMap { step ->
+            mentionPattern.findAll(step.text)
+                .mapNotNull { it.groupValues[1].toLongOrNull() }
+                .toList()
+        }.distinct()
     }
 
     private suspend fun processSteps(steps: List<StepInput>): List<StepWithImage> {
