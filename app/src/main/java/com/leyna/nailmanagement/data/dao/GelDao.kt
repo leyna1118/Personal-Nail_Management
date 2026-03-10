@@ -21,4 +21,7 @@ interface GelDao {
 
     @Query("SELECT * FROM gels WHERE id = :id")
     fun getGelById(id: Long): Flow<Gel?>
+
+    @Query("DELETE FROM gels")
+    suspend fun deleteAll()
 }

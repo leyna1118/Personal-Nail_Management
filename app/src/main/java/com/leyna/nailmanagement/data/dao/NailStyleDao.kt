@@ -65,4 +65,10 @@ interface NailStyleDao {
         }
         return nailStyleId
     }
+
+    @Query("DELETE FROM nail_style_gel_cross_ref")
+    suspend fun deleteAllCrossRefs()
+
+    @Query("DELETE FROM nail_styles")
+    suspend fun deleteAllNailStyles()
 }

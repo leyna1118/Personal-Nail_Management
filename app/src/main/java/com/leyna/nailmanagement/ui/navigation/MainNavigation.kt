@@ -20,6 +20,7 @@ import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.nestedscroll.nestedScroll
@@ -33,12 +34,15 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
+import com.leyna.nailmanagement.data.database.AppDatabase
+import com.leyna.nailmanagement.data.repository.BackupRepository
 import com.leyna.nailmanagement.ui.screens.EditGelContent
 import com.leyna.nailmanagement.ui.screens.EditNailContent
 import com.leyna.nailmanagement.ui.screens.GelDetailContent
 import com.leyna.nailmanagement.ui.screens.GelScreenContent
 import com.leyna.nailmanagement.ui.screens.NailDetailContent
 import com.leyna.nailmanagement.ui.screens.NailScreenContent
+import com.leyna.nailmanagement.ui.screens.SettingsScreenContent
 import com.leyna.nailmanagement.ui.viewmodel.GelViewModel
 import com.leyna.nailmanagement.ui.viewmodel.NailStyleViewModel
 import com.leyna.nailmanagement.ui.viewmodel.ViewModelFactory
@@ -96,9 +100,13 @@ fun MainNavigation(
     val navController = rememberNavController()
     val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior()
 
+    val database = AppDatabase.getDatabase(context)
+    val backupRepository = remember { BackupRepository(context, database.gelDao(), database.nailStyleDao()) }
+
     val bottomNavItems = listOf(
         BottomNavItem.Gel,
-        BottomNavItem.Nail
+        BottomNavItem.Nail,
+        BottomNavItem.Settings
     )
 
     val navBackStackEntry by navController.currentBackStackEntryAsState()
@@ -106,12 +114,13 @@ fun MainNavigation(
     val currentRoute = currentDestination?.route
 
     // Determine if we're on a main tab screen (show bottom bar)
-    val isMainScreen = currentRoute in listOf(BottomNavItem.Gel.route, BottomNavItem.Nail.route)
+    val isMainScreen = currentRoute in listOf(BottomNavItem.Gel.route, BottomNavItem.Nail.route, BottomNavItem.Settings.route)
 
     // Determine title based on current route
     val currentTitle = when (currentRoute) {
         BottomNavItem.Gel.route -> "Gel"
         BottomNavItem.Nail.route -> "Nail"
+        BottomNavItem.Settings.route -> "Settings"
         Routes.GEL_ADD -> "Add Gel"
         Routes.GEL_DETAIL -> "Gel Details"
         Routes.GEL_EDIT -> "Edit Gel"
@@ -143,7 +152,7 @@ fun MainNavigation(
                     }
                 },
                 actions = {
-                    if (isMainScreen) {
+                    if (isMainScreen && currentRoute != BottomNavItem.Settings.route) {
                         IconButton(onClick = { /* Search */ }) {
                             Icon(
                                 imageVector = Icons.Default.Search,
@@ -359,6 +368,14 @@ fun MainNavigation(
                         CircularProgressIndicator()
                     }
                 }
+            }
+
+            // Settings route
+            composable(route = BottomNavItem.Settings.route) {
+                SettingsScreenContent(
+                    backupRepository = backupRepository,
+                    modifier = Modifier.fillMaxSize()
+                )
             }
         }
     }
