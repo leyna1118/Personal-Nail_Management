@@ -12,7 +12,9 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.NavigationBar
+import androidx.compose.material3.NavigationBarItemDefaults
 import androidx.compose.material3.NavigationBarItem
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
@@ -90,6 +92,7 @@ object Routes {
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun MainNavigation(
+    themePreferences: com.leyna.nailmanagement.ui.theme.ThemePreferences,
     modifier: Modifier = Modifier
 ) {
     val context = LocalContext.current
@@ -188,6 +191,11 @@ fun MainNavigation(
                             icon = { Icon(imageVector = item.icon, contentDescription = item.label) },
                             label = { Text(text = item.label) },
                             selected = currentDestination?.hierarchy?.any { it.route == item.route } == true,
+                            colors = NavigationBarItemDefaults.colors(
+                                indicatorColor = MaterialTheme.colorScheme.primaryContainer,
+                                unselectedIconColor = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f),
+                                unselectedTextColor = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f),
+                            ),
                             onClick = {
                                 navController.navigate(item.route) {
                                     popUpTo(navController.graph.findStartDestination().id) {
@@ -374,6 +382,7 @@ fun MainNavigation(
             composable(route = BottomNavItem.Settings.route) {
                 SettingsScreenContent(
                     backupRepository = backupRepository,
+                    themePreferences = themePreferences,
                     modifier = Modifier.fillMaxSize()
                 )
             }
