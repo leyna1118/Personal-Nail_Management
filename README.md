@@ -25,6 +25,17 @@ A nail art management app designed for nail technicians to organize gel products
 - Storage format: `[[gel:ID]]`, displayed as bold `@GelName`
 - Deleting part of a mention removes the entire mention
 
+### Theme Customization
+
+- 12 preset seed colors + custom hex color input
+- Dynamic color support on Android 12+ (wallpaper-based)
+- Generates full Material 3 light/dark color scheme from seed color
+
+### Settings
+
+- Export / import database backup
+- Theme color customization
+
 ## 功能
 
 ### 凝膠管理
@@ -45,6 +56,17 @@ A nail art management app designed for nail technicians to organize gel products
 - 輸入 `@` 觸發凝膠選單，支援即時搜尋
 - 儲存格式：`[[gel:ID]]`，顯示為粗體 `@凝膠名稱`
 - 刪除部分標記時自動移除整個標記
+
+### 主題自訂
+
+- 12 種預設種子色 + 自訂 Hex 色碼輸入
+- Android 12+ 支援動態色彩（依桌布自動配色）
+- 依種子色自動生成完整 Material 3 淺色/深色配色方案
+
+### 設定
+
+- 匯出 / 匯入資料庫備份
+- 主題色彩自訂
 
 ## Tech Stack
 
