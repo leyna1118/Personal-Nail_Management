@@ -34,6 +34,13 @@ class GelViewModel(
         }
     }
 
+    fun deleteGels(ids: List<Long>) {
+        viewModelScope.launch {
+            val imagePaths = repository.deleteGels(ids)
+            imagePaths.forEach { imageRepository.deleteImage(it) }
+        }
+    }
+
     fun updateGel(id: Long, name: String, price: Double, colorCode: String, imageUri: Uri?, existingImagePath: String?) {
         viewModelScope.launch {
             val imagePath = if (imageUri != null) {

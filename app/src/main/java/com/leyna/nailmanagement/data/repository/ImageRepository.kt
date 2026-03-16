@@ -42,6 +42,14 @@ class ImageRepository(private val context: Context) {
         )
     }
 
+    fun deleteImage(path: String?) {
+        if (path == null) return
+        try {
+            val file = File(path)
+            if (file.exists()) file.delete()
+        } catch (_: Exception) {}
+    }
+
     private suspend fun copyImageToInternalStorage(
         uri: Uri,
         directory: String,

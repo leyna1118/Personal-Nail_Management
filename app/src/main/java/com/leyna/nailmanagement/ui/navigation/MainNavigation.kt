@@ -9,6 +9,8 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.outlined.CheckCircle
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -25,7 +27,9 @@ import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.nestedscroll.nestedScroll
@@ -136,6 +140,16 @@ fun MainNavigation(
         else -> "Gel"
     }
 
+    // Selection state (lifted from list screens)
+    var gelSelectedIds by remember { mutableStateOf(setOf<Long>()) }
+    var nailSelectedIds by remember { mutableStateOf(setOf<Long>()) }
+    var selectionModeActive by remember { mutableStateOf(false) }
+    val isSelectionMode = selectionModeActive || when (currentRoute) {
+        BottomNavItem.Gel.route -> gelSelectedIds.isNotEmpty()
+        BottomNavItem.Nail.route -> nailSelectedIds.isNotEmpty()
+        else -> false
+    }
+
     // Collect data from ViewModels
     val gels by gelViewModel.allGels.collectAsState()
     val gelsWithNailStyles by nailStyleViewModel.allGelsWithNailStyles.collectAsState()
@@ -159,10 +173,22 @@ fun MainNavigation(
                 },
                 actions = {
                     if (isMainScreen && currentRoute != BottomNavItem.Settings.route) {
-                        IconButton(onClick = { /* Search */ }) {
+                        IconButton(
+                            onClick = { /* Search */ },
+                            enabled = !isSelectionMode
+                        ) {
                             Icon(
                                 imageVector = Icons.Default.Search,
                                 contentDescription = "Search"
+                            )
+                        }
+                        IconButton(
+                            onClick = { selectionModeActive = true },
+                            enabled = !isSelectionMode
+                        ) {
+                            Icon(
+                                imageVector = Icons.Outlined.CheckCircle,
+                                contentDescription = "Select items"
                             )
                         }
                         IconButton(
@@ -175,7 +201,8 @@ fun MainNavigation(
                                         navController.navigate(Routes.NAIL_ADD)
                                     }
                                 }
-                            }
+                            },
+                            enabled = !isSelectionMode
                         ) {
                             Icon(
                                 imageVector = Icons.Default.Add,
@@ -200,6 +227,9 @@ fun MainNavigation(
                                 unselectedTextColor = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f),
                             ),
                             onClick = {
+                                gelSelectedIds = emptySet()
+                                nailSelectedIds = emptySet()
+                                selectionModeActive = false
                                 navController.navigate(item.route) {
                                     popUpTo(navController.graph.findStartDestination().id) {
                                         saveState = true
@@ -229,6 +259,21 @@ fun MainNavigation(
                     gelsWithNailStyles = gelsWithNailStyles,
                     onGelClick = { gelWithNailStyles ->
                         navController.navigate(Routes.gelDetail(gelWithNailStyles.gel.id))
+                    },
+                    selectedIds = gelSelectedIds,
+                    onSelectedIdsChange = {
+                        gelSelectedIds = it
+                        if (it.isNotEmpty()) selectionModeActive = true
+                    },
+                    isSelectionMode = isSelectionMode,
+                    onDeleteGels = { ids ->
+                        gelViewModel.deleteGels(ids)
+                        gelSelectedIds = emptySet()
+                        selectionModeActive = false
+                    },
+                    onExitSelectionMode = {
+                        gelSelectedIds = emptySet()
+                        selectionModeActive = false
                     },
                     modifier = Modifier.fillMaxSize()
                 )
@@ -260,6 +305,10 @@ fun MainNavigation(
                         gelWithNailStyles = gelItem,
                         onEditClick = {
                             navController.navigate(Routes.gelEdit(gelId))
+                        },
+                        onDeleteClick = {
+                            gelViewModel.deleteGels(listOf(gelId))
+                            navController.popBackStack()
                         },
                         onNailStyleClick = { nailStyleId ->
                             navController.navigate(Routes.nailDetail(nailStyleId, fromLabel = true))
@@ -309,6 +358,21 @@ fun MainNavigation(
                     onNailStyleClick = { nailStyleWithGels ->
                         navController.navigate(Routes.nailDetail(nailStyleWithGels.nailStyle.id))
                     },
+                    selectedIds = nailSelectedIds,
+                    onSelectedIdsChange = {
+                        nailSelectedIds = it
+                        if (it.isNotEmpty()) selectionModeActive = true
+                    },
+                    isSelectionMode = isSelectionMode,
+                    onDeleteNailStyles = { ids ->
+                        nailStyleViewModel.deleteNailStyles(ids)
+                        nailSelectedIds = emptySet()
+                        selectionModeActive = false
+                    },
+                    onExitSelectionMode = {
+                        nailSelectedIds = emptySet()
+                        selectionModeActive = false
+                    },
                     modifier = Modifier.fillMaxSize()
                 )
             }
@@ -341,6 +405,10 @@ fun MainNavigation(
                         allGels = gels,
                         onEditClick = {
                             navController.navigate(Routes.nailEdit(nailId))
+                        },
+                        onDeleteClick = {
+                            nailStyleViewModel.deleteNailStyles(listOf(nailId))
+                            navController.popBackStack()
                         },
                         onGelClick = { gelId ->
                             navController.navigate(Routes.gelDetail(gelId, fromLabel = true))

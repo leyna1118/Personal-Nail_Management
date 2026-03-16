@@ -25,4 +25,21 @@ class NailStyleRepository(private val nailStyleDao: NailStyleDao) {
 
     suspend fun updateNailStyleWithGels(nailStyle: NailStyle, gelIds: List<Long>) =
         nailStyleDao.updateNailStyleWithGels(nailStyle, gelIds)
+
+    suspend fun deleteNailStyles(ids: List<Long>): List<String?> {
+        val imagePaths = mutableListOf<String?>()
+        for (id in ids) {
+            val nailStyle = nailStyleDao.getNailStyleByIdSync(id) ?: continue
+            imagePaths.add(nailStyle.imagePath)
+            if (nailStyle.steps.isNotBlank()) {
+                nailStyle.steps.split("|||").forEach { stepData ->
+                    val parts = stepData.split(";;", limit = 2)
+                    val imgPath = parts.getOrNull(1)?.takeIf { it.isNotBlank() }
+                    imagePaths.add(imgPath)
+                }
+            }
+        }
+        nailStyleDao.deleteNailStylesByIds(ids)
+        return imagePaths
+    }
 }

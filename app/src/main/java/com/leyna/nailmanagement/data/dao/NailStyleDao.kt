@@ -66,6 +66,15 @@ interface NailStyleDao {
         return nailStyleId
     }
 
+    @Query("SELECT * FROM nail_styles WHERE id = :id")
+    suspend fun getNailStyleByIdSync(id: Long): NailStyle?
+
+    @Query("SELECT * FROM nail_styles")
+    suspend fun getAllNailStylesSync(): List<NailStyle>
+
+    @Query("DELETE FROM nail_styles WHERE id IN (:ids)")
+    suspend fun deleteNailStylesByIds(ids: List<Long>)
+
     @Query("DELETE FROM nail_style_gel_cross_ref")
     suspend fun deleteAllCrossRefs()
 

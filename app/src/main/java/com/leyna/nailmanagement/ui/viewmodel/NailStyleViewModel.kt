@@ -50,6 +50,13 @@ class NailStyleViewModel(
     fun getGelWithNailStylesById(id: Long): Flow<GelWithNailStyles?> =
         repository.getGelWithNailStylesById(id)
 
+    fun deleteNailStyles(ids: List<Long>) {
+        viewModelScope.launch {
+            val imagePaths = repository.deleteNailStyles(ids)
+            imagePaths.forEach { imageRepository.deleteImage(it) }
+        }
+    }
+
     fun insertNailStyle(
         name: String,
         steps: List<StepInput>,

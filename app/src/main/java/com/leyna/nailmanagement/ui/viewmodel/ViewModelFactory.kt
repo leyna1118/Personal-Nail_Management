@@ -17,7 +17,7 @@ class ViewModelFactory(private val context: Context) : ViewModelProvider.Factory
 
         return when {
             modelClass.isAssignableFrom(GelViewModel::class.java) -> {
-                val gelRepository = GelRepository(database.gelDao())
+                val gelRepository = GelRepository(database.gelDao(), database.nailStyleDao())
                 GelViewModel(gelRepository, imageRepository) as T
             }
             modelClass.isAssignableFrom(NailStyleViewModel::class.java) -> {
