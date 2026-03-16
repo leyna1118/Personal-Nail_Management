@@ -11,6 +11,7 @@ A nail art management app designed for nail technicians to organize gel products
 - Create and edit gel info (name, price, color code)
 - Upload product photos for each gel
 - View which nail styles use a gel
+- Batch select and delete gels
 
 ### Nail Style Management
 
@@ -18,6 +19,13 @@ A nail art management app designed for nail technicians to organize gel products
 - Upload finished result photos
 - Use `@` mentions in step descriptions to tag gels and auto-link them
 - Tap mentions to navigate to gel or style details
+- Batch select and delete nail styles
+
+### Search
+
+- Search gels by name or color code
+- Search nail styles by name or associated gel names
+- Context-aware empty state when no results match
 
 ### @ Mention System
 
@@ -35,6 +43,7 @@ A nail art management app designed for nail technicians to organize gel products
 
 - Export / import database backup
 - Theme color customization
+- Display app version and author info
 
 ## 功能
 
@@ -43,6 +52,7 @@ A nail art management app designed for nail technicians to organize gel products
 - 新增、編輯凝膠資訊（名稱、價格、色號）
 - 為每款凝膠上傳產品照片
 - 查看凝膠被哪些款式使用
+- 批次選取與刪除凝膠
 
 ### 美甲款式管理
 
@@ -50,6 +60,13 @@ A nail art management app designed for nail technicians to organize gel products
 - 上傳完成作品照片
 - 在步驟描述中使用 `@` 標記凝膠，自動建立連結
 - 點擊標記可跳轉至對應凝膠或款式詳情
+- 批次選取與刪除款式
+
+### 搜尋
+
+- 依名稱或色號搜尋凝膠
+- 依名稱或關聯凝膠名稱搜尋美甲款式
+- 搜尋無結果時顯示對應提示
 
 ### @ 標記系統
 
@@ -67,6 +84,7 @@ A nail art management app designed for nail technicians to organize gel products
 
 - 匯出 / 匯入資料庫備份
 - 主題色彩自訂
+- 顯示 App 版本與作者資訊
 
 ## Tech Stack
 
