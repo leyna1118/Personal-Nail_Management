@@ -5,7 +5,9 @@ import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Add
@@ -25,6 +27,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -32,6 +35,9 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
+import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalContext
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -150,19 +156,87 @@ fun MainNavigation(
         else -> false
     }
 
+    // Search state
+    var isSearchActive by remember { mutableStateOf(false) }
+    var searchQuery by remember { mutableStateOf("") }
+
     // Collect data from ViewModels
     val gels by gelViewModel.allGels.collectAsState()
     val gelsWithNailStyles by nailStyleViewModel.allGelsWithNailStyles.collectAsState()
     val nailStylesWithGels by nailStyleViewModel.allNailStylesWithGels.collectAsState()
 
+    // Filtered data based on search
+    val filteredGelsWithNailStyles = remember(gelsWithNailStyles, searchQuery, isSearchActive) {
+        if (!isSearchActive || searchQuery.isBlank()) gelsWithNailStyles
+        else {
+            val q = searchQuery.trim().lowercase()
+            gelsWithNailStyles.filter { item ->
+                item.gel.name.lowercase().contains(q) ||
+                    item.gel.colorCode.lowercase().contains(q) ||
+                    item.nailStyles.any { it.name.lowercase().contains(q) }
+            }
+        }
+    }
+    val filteredNailStylesWithGels = remember(nailStylesWithGels, searchQuery, isSearchActive) {
+        if (!isSearchActive || searchQuery.isBlank()) nailStylesWithGels
+        else {
+            val q = searchQuery.trim().lowercase()
+            nailStylesWithGels.filter { item ->
+                item.nailStyle.name.lowercase().contains(q) ||
+                    item.gels.any { it.name.lowercase().contains(q) }
+            }
+        }
+    }
+
     Scaffold(
         modifier = modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
         topBar = {
             TopAppBar(
-                title = { Text(text = currentTitle) },
+                title = {
+                    if (isSearchActive && isMainScreen && currentRoute != BottomNavItem.Settings.route) {
+                        val focusRequester = remember { FocusRequester() }
+                        LaunchedEffect(Unit) { focusRequester.requestFocus() }
+                        BasicTextField(
+                            value = searchQuery,
+                            onValueChange = { searchQuery = it },
+                            singleLine = true,
+                            textStyle = MaterialTheme.typography.bodyLarge.copy(
+                                color = MaterialTheme.colorScheme.onSurface
+                            ),
+                            cursorBrush = SolidColor(MaterialTheme.colorScheme.primary),
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .focusRequester(focusRequester),
+                            decorationBox = { innerTextField ->
+                                Box {
+                                    if (searchQuery.isEmpty()) {
+                                        Text(
+                                            text = "Search...",
+                                            style = MaterialTheme.typography.bodyLarge,
+                                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                                        )
+                                    }
+                                    innerTextField()
+                                }
+                            }
+                        )
+                    } else {
+                        Text(text = currentTitle)
+                    }
+                },
                 scrollBehavior = scrollBehavior,
                 navigationIcon = {
-                    if (!isMainScreen) {
+                    if (isSearchActive && isMainScreen && currentRoute != BottomNavItem.Settings.route) {
+                        IconButton(onClick = {
+                            isSearchActive = false
+                            searchQuery = ""
+                        }) {
+                            Icon(
+                                imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                                contentDescription = "Close search"
+                            )
+                        }
+                    } else if (!isMainScreen) {
                         IconButton(onClick = { navController.popBackStack() }) {
                             Icon(
                                 imageVector = Icons.AutoMirrored.Filled.ArrowBack,
@@ -173,41 +247,52 @@ fun MainNavigation(
                 },
                 actions = {
                     if (isMainScreen && currentRoute != BottomNavItem.Settings.route) {
-                        IconButton(
-                            onClick = { /* Search */ },
-                            enabled = !isSelectionMode
-                        ) {
-                            Icon(
-                                imageVector = Icons.Default.Search,
-                                contentDescription = "Search"
-                            )
-                        }
-                        IconButton(
-                            onClick = { selectionModeActive = true },
-                            enabled = !isSelectionMode
-                        ) {
-                            Icon(
-                                imageVector = Icons.Outlined.CheckCircle,
-                                contentDescription = "Select items"
-                            )
-                        }
-                        IconButton(
-                            onClick = {
-                                when (currentRoute) {
-                                    BottomNavItem.Gel.route -> {
-                                        navController.navigate(Routes.GEL_ADD)
-                                    }
-                                    BottomNavItem.Nail.route -> {
-                                        navController.navigate(Routes.NAIL_ADD)
-                                    }
+                        if (isSearchActive) {
+                            if (searchQuery.isNotEmpty()) {
+                                IconButton(onClick = { searchQuery = "" }) {
+                                    Icon(
+                                        imageVector = Icons.Default.Close,
+                                        contentDescription = "Clear search"
+                                    )
                                 }
-                            },
-                            enabled = !isSelectionMode
-                        ) {
-                            Icon(
-                                imageVector = Icons.Default.Add,
-                                contentDescription = "Add"
-                            )
+                            }
+                        } else {
+                            IconButton(
+                                onClick = { isSearchActive = true },
+                                enabled = !isSelectionMode
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Default.Search,
+                                    contentDescription = "Search"
+                                )
+                            }
+                            IconButton(
+                                onClick = { selectionModeActive = true },
+                                enabled = !isSelectionMode
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Outlined.CheckCircle,
+                                    contentDescription = "Select items"
+                                )
+                            }
+                            IconButton(
+                                onClick = {
+                                    when (currentRoute) {
+                                        BottomNavItem.Gel.route -> {
+                                            navController.navigate(Routes.GEL_ADD)
+                                        }
+                                        BottomNavItem.Nail.route -> {
+                                            navController.navigate(Routes.NAIL_ADD)
+                                        }
+                                    }
+                                },
+                                enabled = !isSelectionMode
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Default.Add,
+                                    contentDescription = "Add"
+                                )
+                            }
                         }
                     }
                 }
@@ -230,6 +315,8 @@ fun MainNavigation(
                                 gelSelectedIds = emptySet()
                                 nailSelectedIds = emptySet()
                                 selectionModeActive = false
+                                isSearchActive = false
+                                searchQuery = ""
                                 navController.navigate(item.route) {
                                     popUpTo(navController.graph.findStartDestination().id) {
                                         saveState = true
@@ -256,7 +343,7 @@ fun MainNavigation(
             // Gel routes
             composable(route = BottomNavItem.Gel.route) {
                 GelScreenContent(
-                    gelsWithNailStyles = gelsWithNailStyles,
+                    gelsWithNailStyles = filteredGelsWithNailStyles,
                     onGelClick = { gelWithNailStyles ->
                         navController.navigate(Routes.gelDetail(gelWithNailStyles.gel.id))
                     },
@@ -275,6 +362,7 @@ fun MainNavigation(
                         gelSelectedIds = emptySet()
                         selectionModeActive = false
                     },
+                    isSearchActive = isSearchActive,
                     modifier = Modifier.fillMaxSize()
                 )
             }
@@ -354,7 +442,7 @@ fun MainNavigation(
             // Nail routes
             composable(route = BottomNavItem.Nail.route) {
                 NailScreenContent(
-                    nailStylesWithGels = nailStylesWithGels,
+                    nailStylesWithGels = filteredNailStylesWithGels,
                     onNailStyleClick = { nailStyleWithGels ->
                         navController.navigate(Routes.nailDetail(nailStyleWithGels.nailStyle.id))
                     },
@@ -373,6 +461,7 @@ fun MainNavigation(
                         nailSelectedIds = emptySet()
                         selectionModeActive = false
                     },
+                    isSearchActive = isSearchActive,
                     modifier = Modifier.fillMaxSize()
                 )
             }

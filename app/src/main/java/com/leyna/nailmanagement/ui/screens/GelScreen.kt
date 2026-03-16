@@ -60,6 +60,7 @@ fun GelScreenContent(
     isSelectionMode: Boolean,
     onDeleteGels: (List<Long>) -> Unit,
     onExitSelectionMode: () -> Unit,
+    isSearchActive: Boolean = false,
     modifier: Modifier = Modifier
 ) {
 
@@ -77,7 +78,8 @@ fun GelScreenContent(
                 contentAlignment = Alignment.Center
             ) {
                 Text(
-                    text = "No gels yet.\nTap + to add a gel.",
+                    text = if (isSearchActive) "No matching gels found."
+                           else "No gels yet.\nTap + to add a gel.",
                     textAlign = TextAlign.Center,
                     style = MaterialTheme.typography.bodyLarge,
                     color = MaterialTheme.colorScheme.onSurfaceVariant

@@ -60,6 +60,7 @@ fun NailScreenContent(
     isSelectionMode: Boolean,
     onDeleteNailStyles: (List<Long>) -> Unit,
     onExitSelectionMode: () -> Unit,
+    isSearchActive: Boolean = false,
     modifier: Modifier = Modifier
 ) {
 
@@ -77,7 +78,8 @@ fun NailScreenContent(
                 contentAlignment = Alignment.Center
             ) {
                 Text(
-                    text = "No nail styles yet.\nTap + to add a style.",
+                    text = if (isSearchActive) "No matching nail styles found."
+                           else "No nail styles yet.\nTap + to add a style.",
                     textAlign = TextAlign.Center,
                     style = MaterialTheme.typography.bodyLarge,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
