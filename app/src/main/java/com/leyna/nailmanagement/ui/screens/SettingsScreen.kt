@@ -353,6 +353,29 @@ fun SettingsScreenContent(
                 }
             )
             HorizontalDivider()
+
+            // About section header
+            Text(
+                text = "About",
+                style = MaterialTheme.typography.titleSmall,
+                color = MaterialTheme.colorScheme.primary,
+                modifier = Modifier.padding(start = 16.dp, top = 16.dp, bottom = 8.dp)
+            )
+
+            ListItem(
+                headlineContent = { Text("Version") },
+                supportingContent = {
+                    val versionName = context.packageManager
+                        .getPackageInfo(context.packageName, 0).versionName
+                    Text(versionName ?: "Unknown")
+                }
+            )
+            HorizontalDivider()
+
+            ListItem(
+                headlineContent = { Text("Author") },
+                supportingContent = { Text("Leyna Chen") }
+            )
         }
 
         // Loading overlay
