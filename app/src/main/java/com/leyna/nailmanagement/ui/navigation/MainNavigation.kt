@@ -56,7 +56,9 @@ import com.leyna.nailmanagement.data.repository.BackupRepository
 import com.leyna.nailmanagement.ui.screens.EditGelContent
 import com.leyna.nailmanagement.ui.screens.EditNailContent
 import com.leyna.nailmanagement.ui.screens.GelDetailContent
+import com.leyna.nailmanagement.ui.screens.GelInventoryContent
 import com.leyna.nailmanagement.ui.screens.GelScreenContent
+import com.leyna.nailmanagement.ui.screens.GelSuggestions
 import com.leyna.nailmanagement.ui.screens.NailDetailContent
 import com.leyna.nailmanagement.ui.screens.NailScreenContent
 import com.leyna.nailmanagement.ui.screens.SettingsScreenContent
@@ -77,6 +79,7 @@ object Routes {
         const val GEL_ADD = "gel_add"
         const val GEL_DETAIL = "gel_detail"
         const val GEL_EDIT = "gel_edit"
+        const val GEL_INVENTORY = "gel_inventory"
         const val NAIL_ADD = "nail_add"
         const val NAIL_DETAIL = "nail_detail"
         const val NAIL_EDIT = "nail_edit"
@@ -86,6 +89,7 @@ object Routes {
     const val GEL_ADD = Base.GEL_ADD
     const val GEL_DETAIL = "${Base.GEL_DETAIL}/{${Args.GEL_ID}}?${Args.FROM_LABEL}={${Args.FROM_LABEL}}"
     const val GEL_EDIT = "${Base.GEL_EDIT}/{${Args.GEL_ID}}"
+    const val GEL_INVENTORY = "${Base.GEL_INVENTORY}/{${Args.GEL_ID}}"
     const val NAIL_ADD = Base.NAIL_ADD
     const val NAIL_DETAIL = "${Base.NAIL_DETAIL}/{${Args.NAIL_ID}}?${Args.FROM_LABEL}={${Args.FROM_LABEL}}"
     const val NAIL_EDIT = "${Base.NAIL_EDIT}/{${Args.NAIL_ID}}"
@@ -96,6 +100,9 @@ object Routes {
 
     fun gelEdit(gelId: Long) =
         "${Base.GEL_EDIT}/$gelId"
+
+    fun gelInventory(gelId: Long) =
+        "${Base.GEL_INVENTORY}/$gelId"
 
     fun nailDetail(nailId: Long, fromLabel: Boolean = false) =
         "${Base.NAIL_DETAIL}/$nailId?${Args.FROM_LABEL}=$fromLabel"
@@ -119,7 +126,7 @@ fun MainNavigation(
     val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior()
 
     val database = AppDatabase.getDatabase(context)
-    val backupRepository = remember { BackupRepository(context, database.gelDao(), database.nailStyleDao()) }
+    val backupRepository = remember { BackupRepository(context, database.gelDao(), database.nailStyleDao(), database.gelInventoryDao()) }
 
     val bottomNavItems = listOf(
         BottomNavItem.Gel,
@@ -142,6 +149,7 @@ fun MainNavigation(
         Routes.GEL_ADD -> stringResource(R.string.title_add_gel)
         Routes.GEL_DETAIL -> stringResource(R.string.title_gel_details)
         Routes.GEL_EDIT -> stringResource(R.string.title_edit_gel)
+        Routes.GEL_INVENTORY -> stringResource(R.string.title_inventory)
         Routes.NAIL_ADD -> stringResource(R.string.title_add_nail_style)
         Routes.NAIL_DETAIL -> stringResource(R.string.title_nail_details)
         Routes.NAIL_EDIT -> stringResource(R.string.title_edit_nail_style)
@@ -166,6 +174,13 @@ fun MainNavigation(
     val gels by gelViewModel.allGels.collectAsState()
     val gelsWithNailStyles by nailStyleViewModel.allGelsWithNailStyles.collectAsState()
     val nailStylesWithGels by nailStyleViewModel.allNailStylesWithGels.collectAsState()
+
+    // Autocomplete suggestions
+    val brands by gelViewModel.distinctBrands.collectAsState()
+    val seriesList by gelViewModel.distinctSeries.collectAsState()
+    val categories by gelViewModel.distinctCategories.collectAsState()
+    val stores by gelViewModel.distinctStores.collectAsState()
+    val gelSuggestions = GelSuggestions(brands, seriesList, categories, stores)
 
     // Filtered data based on search
     val filteredGelsWithNailStyles = remember(gelsWithNailStyles, searchQuery, isSearchActive) {
@@ -372,10 +387,13 @@ fun MainNavigation(
             composable(route = Routes.GEL_ADD) {
                 EditGelContent(
                     gel = null,
-                    onSave = { name, price, colorCode, imageUri, _ ->
-                        gelViewModel.insertGel(name, price, colorCode, imageUri)
+                    onSave = { name, price, colorCode, imageUri, _, brand, series, category, store, storeNote, notes ->
+                        gelViewModel.insertGel(name, price, colorCode, imageUri, brand, series, category, store, storeNote, notes)
                         navController.popBackStack()
                     },
+                    suggestions = gelSuggestions,
+                    onLookupStoreNote = { gelViewModel.getStoreNoteByStore(it) },
+                    onUpdateStoreNoteForAll = { s, n -> gelViewModel.updateStoreNoteForStore(s, n) },
                     modifier = Modifier.fillMaxSize()
                 )
             }
@@ -404,6 +422,9 @@ fun MainNavigation(
                         onNailStyleClick = { nailStyleId ->
                             navController.navigate(Routes.nailDetail(nailStyleId, fromLabel = true))
                         },
+                        onInventoryClick = {
+                            navController.navigate(Routes.gelInventory(gelId))
+                        },
                         showEditButton = !fromLabel,
                         modifier = Modifier.fillMaxSize()
                     )
@@ -426,10 +447,13 @@ fun MainNavigation(
                 gel?.let { gelItem ->
                     EditGelContent(
                         gel = gelItem,
-                        onSave = { name, price, colorCode, imageUri, existingImagePath ->
-                            gelViewModel.updateGel(gelId, name, price, colorCode, imageUri, existingImagePath)
+                        onSave = { name, price, colorCode, imageUri, existingImagePath, brand, series, category, store, storeNote, notes ->
+                            gelViewModel.updateGel(gelId, name, price, colorCode, imageUri, existingImagePath, brand, series, category, store, storeNote, notes)
                             navController.popBackStack()
                         },
+                        suggestions = gelSuggestions,
+                        onLookupStoreNote = { gelViewModel.getStoreNoteByStore(it) },
+                        onUpdateStoreNoteForAll = { s, n -> gelViewModel.updateStoreNoteForStore(s, n) },
                         modifier = Modifier.fillMaxSize()
                     )
                 } ?: run {
@@ -440,6 +464,22 @@ fun MainNavigation(
                         CircularProgressIndicator()
                     }
                 }
+            }
+
+            composable(
+                route = Routes.GEL_INVENTORY,
+                arguments = listOf(navArgument(Routes.Args.GEL_ID) { type = NavType.LongType })
+            ) { backStackEntry ->
+                val gelId = backStackEntry.arguments?.getLong(Routes.Args.GEL_ID) ?: 0L
+                val inventoryList by gelViewModel.getInventoryByGelId(gelId).collectAsState(initial = emptyList())
+
+                GelInventoryContent(
+                    inventoryList = inventoryList,
+                    onAdd = { inventory -> gelViewModel.insertInventory(inventory.copy(gelId = gelId)) },
+                    onUpdate = { inventory -> gelViewModel.updateInventory(inventory) },
+                    onDelete = { id -> gelViewModel.deleteInventory(id) },
+                    modifier = Modifier.fillMaxSize()
+                )
             }
 
             // Nail routes

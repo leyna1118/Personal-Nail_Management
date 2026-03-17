@@ -11,7 +11,17 @@ class GelRepository(
 ) {
     val allGels: Flow<List<Gel>> = gelDao.getAllGels()
 
+    val distinctBrands: Flow<List<String>> = gelDao.getDistinctBrands()
+    val distinctSeries: Flow<List<String>> = gelDao.getDistinctSeries()
+    val distinctCategories: Flow<List<String>> = gelDao.getDistinctCategories()
+    val distinctStores: Flow<List<String>> = gelDao.getDistinctStores()
+
     fun getGelById(id: Long): Flow<Gel?> = gelDao.getGelById(id)
+
+    suspend fun getStoreNoteByStore(store: String): String? = gelDao.getStoreNoteByStore(store)
+
+    suspend fun updateStoreNoteForStore(store: String, storeNote: String?) =
+        gelDao.updateStoreNoteForStore(store, storeNote)
 
     suspend fun insertGel(gel: Gel): Long = gelDao.insertGel(gel)
 

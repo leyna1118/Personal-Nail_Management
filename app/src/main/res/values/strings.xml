@@ -122,6 +122,36 @@
     <string name="toast_import_failed">Import failed: %s</string>
     <string name="version_unknown">Unknown</string>
 
+    <!-- Gel Extended Fields -->
+    <string name="label_brand">Brand</string>
+    <string name="label_series">Series</string>
+    <string name="label_category">Category</string>
+    <string name="label_store">Store</string>
+    <string name="label_store_note">Store Link/Address</string>
+    <string name="label_notes">Notes</string>
+
+    <!-- Inventory -->
+    <string name="title_inventory">Inventory</string>
+    <string name="label_purchase_date">Purchase Date</string>
+    <string name="label_expiry_date">Expiration Date</string>
+    <string name="label_used_up_date">Depleted Date</string>
+    <string name="label_write_off_date">Disposed Date</string>
+    <string name="label_inventory_note">Note</string>
+    <string name="action_add_inventory">Add Record</string>
+    <string name="empty_no_inventory">No inventory records yet.</string>
+    <string name="dialog_title_delete_inventory">Delete Record</string>
+    <string name="dialog_delete_inventory_confirm">Are you sure you want to delete this inventory record?</string>
+    <string name="action_save_inventory">Save</string>
+    <string name="label_select_date">Select Date</string>
+    <string name="action_clear_date">Clear</string>
+    <string name="dialog_import_result_v2">Imported %1$d Gels, %2$d Nail Styles, and %3$d inventory records</string>
+
+    <!-- Store Note Confirmation -->
+    <string name="dialog_title_update_store_note">Update Store Info</string>
+    <string name="dialog_update_store_note">Update the link/address for all gels from \"%s\"?</string>
+    <string name="dialog_update_store_note_only_this">Only This Gel</string>
+    <string name="dialog_update_store_note_all">Update All</string>
+
     <!-- Language Settings -->
     <string name="settings_language">Language</string>
     <string name="settings_language_system">Follow System</string>

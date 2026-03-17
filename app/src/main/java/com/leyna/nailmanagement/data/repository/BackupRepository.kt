@@ -2,8 +2,10 @@ package com.leyna.nailmanagement.data.repository
 
 import android.content.Context
 import com.leyna.nailmanagement.data.dao.GelDao
+import com.leyna.nailmanagement.data.dao.GelInventoryDao
 import com.leyna.nailmanagement.data.dao.NailStyleDao
 import com.leyna.nailmanagement.data.entity.Gel
+import com.leyna.nailmanagement.data.entity.GelInventory
 import com.leyna.nailmanagement.data.entity.NailStyle
 import com.leyna.nailmanagement.data.entity.StepWithImage
 import com.leyna.nailmanagement.ui.viewmodel.NailStyleViewModel
@@ -24,23 +26,25 @@ import java.util.zip.ZipOutputStream
 
 data class ImportResult(
     val gelCount: Int,
-    val nailStyleCount: Int
+    val nailStyleCount: Int,
+    val inventoryCount: Int = 0
 )
 
 class BackupRepository(
     private val context: Context,
     private val gelDao: GelDao,
-    private val nailStyleDao: NailStyleDao
+    private val nailStyleDao: NailStyleDao,
+    private val gelInventoryDao: GelInventoryDao
 ) {
     companion object {
         private const val GEL_IMAGES_DIR = "gel_images"
         private const val NAIL_IMAGES_DIR = "nail_images"
         private const val DATA_JSON = "data.json"
-        private const val BACKUP_VERSION = 1
+        private const val BACKUP_VERSION = 2
     }
 
     /**
-     * Exports all gels, nail styles, cross-refs, and images to a ZIP file in cache dir.
+     * Exports all gels, nail styles, cross-refs, inventory, and images to a ZIP file in cache dir.
      * Returns the File pointing to the created ZIP.
      */
     suspend fun exportToZip(): File = withContext(Dispatchers.IO) {
@@ -60,6 +64,12 @@ class BackupRepository(
                     put("name", gel.name)
                     put("price", gel.price)
                     put("colorCode", gel.colorCode)
+                    put("brand", gel.brand ?: JSONObject.NULL)
+                    put("series", gel.series ?: JSONObject.NULL)
+                    put("category", gel.category ?: JSONObject.NULL)
+                    put("store", gel.store ?: JSONObject.NULL)
+                    put("storeNote", gel.storeNote ?: JSONObject.NULL)
+                    put("notes", gel.notes ?: JSONObject.NULL)
                 }
 
                 if (gel.imagePath != null) {
@@ -125,6 +135,22 @@ class BackupRepository(
                 nailStylesJsonArray.put(nailStyleJson)
             }
 
+            // Build inventory JSON array
+            val inventoryJsonArray = JSONArray()
+            val allInventory = gelInventoryDao.getAllSync()
+            for (inv in allInventory) {
+                val invJson = JSONObject().apply {
+                    put("id", inv.id)
+                    put("gelId", inv.gelId)
+                    put("purchaseDate", inv.purchaseDate ?: JSONObject.NULL)
+                    put("expiryDate", inv.expiryDate ?: JSONObject.NULL)
+                    put("usedUpDate", inv.usedUpDate ?: JSONObject.NULL)
+                    put("writeOffDate", inv.writeOffDate ?: JSONObject.NULL)
+                    put("note", inv.note ?: JSONObject.NULL)
+                }
+                inventoryJsonArray.put(invJson)
+            }
+
             // Build root JSON
             val dateTimeFormat = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss", Locale.US)
             val rootJson = JSONObject().apply {
@@ -132,6 +158,7 @@ class BackupRepository(
                 put("exportDate", dateTimeFormat.format(Date()))
                 put("gels", gelsJsonArray)
                 put("nailStyles", nailStylesJsonArray)
+                put("inventory", inventoryJsonArray)
             }
 
             // Write data.json
@@ -179,6 +206,7 @@ class BackupRepository(
             // Clear all existing data
             nailStyleDao.deleteAllCrossRefs()
             nailStyleDao.deleteAllNailStyles()
+            gelInventoryDao.deleteAll()
             gelDao.deleteAll()
 
             // Delete existing image directories
@@ -213,7 +241,13 @@ class BackupRepository(
                     name = gelJson.getString("name"),
                     price = gelJson.getDouble("price"),
                     colorCode = gelJson.getString("colorCode"),
-                    imagePath = imagePath
+                    imagePath = imagePath,
+                    brand = gelJson.optNullableString("brand"),
+                    series = gelJson.optNullableString("series"),
+                    category = gelJson.optNullableString("category"),
+                    store = gelJson.optNullableString("store"),
+                    storeNote = gelJson.optNullableString("storeNote"),
+                    notes = gelJson.optNullableString("notes")
                 )
                 val newId = gelDao.insertGel(gel)
                 gelIdMap[oldId] = newId
@@ -285,9 +319,32 @@ class BackupRepository(
                 nailStyleCount++
             }
 
+            // Import inventory (v2+)
+            var inventoryCount = 0
+            if (rootJson.has("inventory")) {
+                val inventoryArray = rootJson.getJSONArray("inventory")
+                for (i in 0 until inventoryArray.length()) {
+                    val invJson = inventoryArray.getJSONObject(i)
+                    val oldGelId = invJson.getLong("gelId")
+                    val newGelId = gelIdMap[oldGelId] ?: continue
+                    val inventory = GelInventory(
+                        id = 0,
+                        gelId = newGelId,
+                        purchaseDate = if (invJson.isNull("purchaseDate")) null else invJson.getLong("purchaseDate"),
+                        expiryDate = if (invJson.isNull("expiryDate")) null else invJson.getLong("expiryDate"),
+                        usedUpDate = if (invJson.isNull("usedUpDate")) null else invJson.getLong("usedUpDate"),
+                        writeOffDate = if (invJson.isNull("writeOffDate")) null else invJson.getLong("writeOffDate"),
+                        note = invJson.optNullableString("note")
+                    )
+                    gelInventoryDao.insert(inventory)
+                    inventoryCount++
+                }
+            }
+
             ImportResult(
                 gelCount = gelsArray.length(),
-                nailStyleCount = nailStyleCount
+                nailStyleCount = nailStyleCount,
+                inventoryCount = inventoryCount
             )
         } finally {
             // Clean up temp directory
@@ -310,4 +367,14 @@ class BackupRepository(
             }
         }
     }
+}
+
+/**
+ * Helper to safely get a nullable String from JSONObject,
+ * treating JSONObject.NULL and "null" as Kotlin null.
+ */
+private fun JSONObject.optNullableString(key: String): String? {
+    if (!has(key) || isNull(key)) return null
+    val value = getString(key)
+    return if (value == "null") null else value
 }

@@ -122,6 +122,36 @@
     <string name="toast_import_failed">匯入失敗：%s</string>
     <string name="version_unknown">未知</string>
 
+    <!-- Gel Extended Fields -->
+    <string name="label_brand">廠牌</string>
+    <string name="label_series">系列</string>
+    <string name="label_category">分類</string>
+    <string name="label_store">店家</string>
+    <string name="label_store_note">店家連結/地址</string>
+    <string name="label_notes">備註</string>
+
+    <!-- Inventory -->
+    <string name="title_inventory">庫存</string>
+    <string name="label_purchase_date">進貨日期</string>
+    <string name="label_expiry_date">有效日期</string>
+    <string name="label_used_up_date">耗盡日期</string>
+    <string name="label_write_off_date">報廢日期</string>
+    <string name="label_inventory_note">備註</string>
+    <string name="action_add_inventory">新增紀錄</string>
+    <string name="empty_no_inventory">尚無庫存紀錄。</string>
+    <string name="dialog_title_delete_inventory">刪除紀錄</string>
+    <string name="dialog_delete_inventory_confirm">確定要刪除此庫存紀錄嗎？</string>
+    <string name="action_save_inventory">儲存</string>
+    <string name="label_select_date">選擇日期</string>
+    <string name="action_clear_date">清除</string>
+    <string name="dialog_import_result_v2">已匯入 %1$d 個甲油膠、%2$d 個美甲款式和 %3$d 筆庫存紀錄</string>
+
+    <!-- Store Note Confirmation -->
+    <string name="dialog_title_update_store_note">更新店家資訊</string>
+    <string name="dialog_update_store_note">要更新所有來自「%s」的甲油膠的連結/地址嗎？</string>
+    <string name="dialog_update_store_note_only_this">僅此甲油膠</string>
+    <string name="dialog_update_store_note_all">全部更新</string>
+
     <!-- Language Settings -->
     <string name="settings_language">語言</string>
     <string name="settings_language_system">跟隨系統</string>

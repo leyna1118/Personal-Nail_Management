@@ -10,7 +10,13 @@ data class Gel(
     val name: String,
     val price: Double,
     val colorCode: String,
-    val imagePath: String? = null
+    val imagePath: String? = null,
+    val brand: String? = null,
+    val series: String? = null,
+    val category: String? = null,
+    val store: String? = null,
+    val storeNote: String? = null,
+    val notes: String? = null
 ) {
     companion object {
         const val TABLE_NAME = "gels"

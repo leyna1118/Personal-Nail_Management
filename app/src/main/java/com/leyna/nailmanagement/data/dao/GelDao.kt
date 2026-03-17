@@ -30,4 +30,22 @@ interface GelDao {
 
     @Query("DELETE FROM gels")
     suspend fun deleteAll()
+
+    @Query("SELECT DISTINCT brand FROM gels WHERE brand IS NOT NULL AND brand != '' ORDER BY brand ASC")
+    fun getDistinctBrands(): Flow<List<String>>
+
+    @Query("SELECT DISTINCT series FROM gels WHERE series IS NOT NULL AND series != '' ORDER BY series ASC")
+    fun getDistinctSeries(): Flow<List<String>>
+
+    @Query("SELECT DISTINCT category FROM gels WHERE category IS NOT NULL AND category != '' ORDER BY category ASC")
+    fun getDistinctCategories(): Flow<List<String>>
+
+    @Query("SELECT DISTINCT store FROM gels WHERE store IS NOT NULL AND store != '' ORDER BY store ASC")
+    fun getDistinctStores(): Flow<List<String>>
+
+    @Query("SELECT storeNote FROM gels WHERE store = :store AND storeNote IS NOT NULL AND storeNote != '' LIMIT 1")
+    suspend fun getStoreNoteByStore(store: String): String?
+
+    @Query("UPDATE gels SET storeNote = :storeNote WHERE store = :store")
+    suspend fun updateStoreNoteForStore(store: String, storeNote: String?)
 }

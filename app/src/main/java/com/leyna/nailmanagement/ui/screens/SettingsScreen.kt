@@ -569,7 +569,11 @@ fun SettingsScreenContent(
             onDismissRequest = { showImportResultDialog = false },
             title = { Text(stringResource(R.string.dialog_title_import_complete)) },
             text = {
-                Text(stringResource(R.string.dialog_import_result, importResult!!.gelCount, importResult!!.nailStyleCount))
+                if (importResult!!.inventoryCount > 0) {
+                    Text(stringResource(R.string.dialog_import_result_v2, importResult!!.gelCount, importResult!!.nailStyleCount, importResult!!.inventoryCount))
+                } else {
+                    Text(stringResource(R.string.dialog_import_result, importResult!!.gelCount, importResult!!.nailStyleCount))
+                }
             },
             confirmButton = {
                 TextButton(onClick = { showImportResultDialog = false }) {

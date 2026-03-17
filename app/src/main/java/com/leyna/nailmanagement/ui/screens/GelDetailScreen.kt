@@ -48,6 +48,7 @@ fun GelDetailContent(
     onEditClick: () -> Unit,
     onDeleteClick: () -> Unit,
     onNailStyleClick: (Long) -> Unit,
+    onInventoryClick: () -> Unit,
     showEditButton: Boolean = true,
 ) {
     val gel = gelWithNailStyles.gel
@@ -85,10 +86,43 @@ fun GelDetailContent(
             ) {
                 DetailRow(label = stringResource(R.string.detail_name), value = gel.name)
                 Spacer(modifier = Modifier.height(12.dp))
-                DetailRow(label = stringResource(R.string.detail_price), value = "$${String.format("%.2f", gel.price)}")
-                Spacer(modifier = Modifier.height(12.dp))
                 DetailRow(label = stringResource(R.string.detail_color_code), value = gel.colorCode)
+                gel.brand?.let {
+                    Spacer(modifier = Modifier.height(12.dp))
+                    DetailRow(label = stringResource(R.string.label_brand), value = it)
+                }
+                gel.series?.let {
+                    Spacer(modifier = Modifier.height(12.dp))
+                    DetailRow(label = stringResource(R.string.label_series), value = it)
+                }
+                gel.category?.let {
+                    Spacer(modifier = Modifier.height(12.dp))
+                    DetailRow(label = stringResource(R.string.label_category), value = it)
+                }
+                Spacer(modifier = Modifier.height(12.dp))
+                DetailRow(label = stringResource(R.string.detail_price), value = "$${String.format("%.2f", gel.price)}")
+                gel.store?.let {
+                    Spacer(modifier = Modifier.height(12.dp))
+                    DetailRow(label = stringResource(R.string.label_store), value = it)
+                }
+                gel.storeNote?.let {
+                    Spacer(modifier = Modifier.height(12.dp))
+                    DetailRow(label = stringResource(R.string.label_store_note), value = it)
+                }
+                gel.notes?.let {
+                    Spacer(modifier = Modifier.height(12.dp))
+                    DetailRow(label = stringResource(R.string.label_notes), value = it)
+                }
             }
+        }
+
+        Spacer(modifier = Modifier.height(8.dp))
+        Button(
+            onClick = onInventoryClick,
+            modifier = Modifier.fillMaxWidth(),
+            shape = RoundedCornerShape(12.dp)
+        ) {
+            Text(stringResource(R.string.title_inventory))
         }
 
         // Nail Styles section
@@ -124,6 +158,7 @@ fun GelDetailContent(
         }
 
         Spacer(modifier = Modifier.weight(1f))
+        Spacer(modifier = Modifier.height(40.dp))
 
         if (showEditButton) {
             var showDeleteConfirm by remember { mutableStateOf(false) }
