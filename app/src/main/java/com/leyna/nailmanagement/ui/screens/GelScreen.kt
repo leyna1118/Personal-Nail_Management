@@ -45,10 +45,12 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
+import com.leyna.nailmanagement.R
 import com.leyna.nailmanagement.data.entity.GelWithNailStyles
 
 @Composable
@@ -78,8 +80,8 @@ fun GelScreenContent(
                 contentAlignment = Alignment.Center
             ) {
                 Text(
-                    text = if (isSearchActive) "No matching gels found."
-                           else "No gels yet.\nTap + to add a gel.",
+                    text = if (isSearchActive) stringResource(R.string.empty_no_matching_gels)
+                           else stringResource(R.string.empty_no_gels_yet),
                     textAlign = TextAlign.Center,
                     style = MaterialTheme.typography.bodyLarge,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
@@ -103,11 +105,11 @@ fun GelScreenContent(
                             IconButton(onClick = { onExitSelectionMode() }) {
                                 Icon(
                                     imageVector = Icons.Default.Close,
-                                    contentDescription = "Exit selection mode"
+                                    contentDescription = stringResource(R.string.cd_exit_selection_mode)
                                 )
                             }
                             Text(
-                                text = "${selectedIds.size} selected",
+                                text = stringResource(R.string.selected_count, selectedIds.size),
                                 style = MaterialTheme.typography.titleMedium
                             )
                         }
@@ -121,7 +123,7 @@ fun GelScreenContent(
                                     }
                                 )
                             }) {
-                                Text(if (selectedIds.size == gelsWithNailStyles.size) "Deselect All" else "Select All")
+                                Text(if (selectedIds.size == gelsWithNailStyles.size) stringResource(R.string.action_deselect_all) else stringResource(R.string.action_select_all))
                             }
                             IconButton(
                                 onClick = { onDeleteGels(selectedIds.toList()) },
@@ -129,7 +131,7 @@ fun GelScreenContent(
                             ) {
                                 Icon(
                                     imageVector = Icons.Default.Delete,
-                                    contentDescription = "Delete selected",
+                                    contentDescription = stringResource(R.string.cd_delete_selected),
                                     tint = MaterialTheme.colorScheme.primary
                                 )
                             }
@@ -137,7 +139,7 @@ fun GelScreenContent(
                     }
                 } else {
                     Text(
-                        text = "Your Gels",
+                        text = stringResource(R.string.title_your_gels),
                         style = MaterialTheme.typography.titleMedium,
                         color = MaterialTheme.colorScheme.primary,
                         modifier = Modifier.padding(horizontal = 16.dp)
@@ -213,7 +215,7 @@ private fun GelCard(
                     if (gel.imagePath != null) {
                         AsyncImage(
                             model = gel.imagePath,
-                            contentDescription = "Gel image",
+                            contentDescription = stringResource(R.string.cd_gel_image),
                             modifier = Modifier
                                 .fillMaxSize()
                                 .clip(RoundedCornerShape(topStart = 12.dp, topEnd = 12.dp)),
@@ -300,7 +302,7 @@ private fun GelCard(
                     if (isSelected) {
                         Icon(
                             imageVector = Icons.Default.Check,
-                            contentDescription = "Selected",
+                            contentDescription = stringResource(R.string.cd_selected),
                             tint = MaterialTheme.colorScheme.onPrimary,
                             modifier = Modifier.size(16.dp)
                         )

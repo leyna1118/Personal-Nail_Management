@@ -45,10 +45,12 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
+import com.leyna.nailmanagement.R
 import com.leyna.nailmanagement.data.entity.NailStyleWithGels
 
 @Composable
@@ -78,8 +80,8 @@ fun NailScreenContent(
                 contentAlignment = Alignment.Center
             ) {
                 Text(
-                    text = if (isSearchActive) "No matching nail styles found."
-                           else "No nail styles yet.\nTap + to add a style.",
+                    text = if (isSearchActive) stringResource(R.string.empty_no_matching_nail_styles)
+                           else stringResource(R.string.empty_no_nail_styles_yet),
                     textAlign = TextAlign.Center,
                     style = MaterialTheme.typography.bodyLarge,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
@@ -103,11 +105,11 @@ fun NailScreenContent(
                             IconButton(onClick = { onExitSelectionMode() }) {
                                 Icon(
                                     imageVector = Icons.Default.Close,
-                                    contentDescription = "Exit selection mode"
+                                    contentDescription = stringResource(R.string.cd_exit_selection_mode)
                                 )
                             }
                             Text(
-                                text = "${selectedIds.size} selected",
+                                text = stringResource(R.string.selected_count, selectedIds.size),
                                 style = MaterialTheme.typography.titleMedium
                             )
                         }
@@ -121,7 +123,7 @@ fun NailScreenContent(
                                     }
                                 )
                             }) {
-                                Text(if (selectedIds.size == nailStylesWithGels.size) "Deselect All" else "Select All")
+                                Text(if (selectedIds.size == nailStylesWithGels.size) stringResource(R.string.action_deselect_all) else stringResource(R.string.action_select_all))
                             }
                             IconButton(
                                 onClick = { onDeleteNailStyles(selectedIds.toList()) },
@@ -129,7 +131,7 @@ fun NailScreenContent(
                             ) {
                                 Icon(
                                     imageVector = Icons.Default.Delete,
-                                    contentDescription = "Delete selected",
+                                    contentDescription = stringResource(R.string.cd_delete_selected),
                                     tint = MaterialTheme.colorScheme.primary
                                 )
                             }
@@ -137,7 +139,7 @@ fun NailScreenContent(
                     }
                 } else {
                     Text(
-                        text = "Your Nail Styles",
+                        text = stringResource(R.string.title_your_nail_styles),
                         style = MaterialTheme.typography.titleMedium,
                         color = MaterialTheme.colorScheme.primary,
                         modifier = Modifier.padding(horizontal = 16.dp)
@@ -213,7 +215,7 @@ private fun NailStyleCard(
                     if (nailStyle.imagePath != null) {
                         AsyncImage(
                             model = nailStyle.imagePath,
-                            contentDescription = "Nail style image",
+                            contentDescription = stringResource(R.string.cd_nail_style_image),
                             modifier = Modifier
                                 .fillMaxSize()
                                 .clip(RoundedCornerShape(topStart = 12.dp, topEnd = 12.dp)),
@@ -292,7 +294,7 @@ private fun NailStyleCard(
                     if (isSelected) {
                         Icon(
                             imageVector = Icons.Default.Check,
-                            contentDescription = "Selected",
+                            contentDescription = stringResource(R.string.cd_selected),
                             tint = MaterialTheme.colorScheme.onPrimary,
                             modifier = Modifier.size(16.dp)
                         )

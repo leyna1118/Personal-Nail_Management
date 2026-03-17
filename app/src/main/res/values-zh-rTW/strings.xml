@@ -1,0 +1,130 @@
+<resources>
+    <string name="app_name">美甲管理</string>
+
+    <!-- Navigation -->
+    <string name="nav_gel">甲油膠</string>
+    <string name="nav_nail">美甲</string>
+    <string name="nav_settings">設定</string>
+    <string name="title_add_gel">新增甲油膠</string>
+    <string name="title_gel_details">甲油膠詳情</string>
+    <string name="title_edit_gel">編輯甲油膠</string>
+    <string name="title_add_nail_style">新增美甲款式</string>
+    <string name="title_nail_details">美甲詳情</string>
+    <string name="title_edit_nail_style">編輯美甲款式</string>
+    <string name="search_placeholder">搜尋…</string>
+    <string name="cd_close_search">關閉搜尋</string>
+    <string name="cd_back">返回</string>
+    <string name="cd_clear_search">清除搜尋</string>
+    <string name="cd_search">搜尋</string>
+    <string name="cd_select_items">選取項目</string>
+    <string name="cd_add">新增</string>
+
+    <!-- Common -->
+    <string name="cancel">取消</string>
+    <string name="delete">刪除</string>
+    <string name="edit">編輯</string>
+    <string name="ok">確定</string>
+    <string name="cd_selected">已選取</string>
+    <string name="selected_count">已選取 %d 項</string>
+    <string name="action_select_all">全選</string>
+    <string name="action_deselect_all">取消全選</string>
+    <string name="cd_exit_selection_mode">退出選取模式</string>
+    <string name="cd_delete_selected">刪除已選取</string>
+
+    <!-- Edit Gel Screen -->
+    <string name="label_image">圖片</string>
+    <string name="cd_gel_image">甲油膠圖片</string>
+    <string name="cd_add_image">新增圖片</string>
+    <string name="tap_to_add_image">點擊新增圖片</string>
+    <string name="label_name">名稱</string>
+    <string name="error_name_required">名稱為必填</string>
+    <string name="label_price">價格</string>
+    <string name="error_valid_price_required">請輸入有效的價格</string>
+    <string name="label_color_code">色號（例如 #FF5733）</string>
+    <string name="error_color_code_required">色號為必填</string>
+    <string name="action_save_gel">儲存甲油膠</string>
+    <string name="action_update_gel">更新甲油膠</string>
+
+    <!-- Edit Nail Screen -->
+    <string name="label_finished_result_image">成品圖片</string>
+    <string name="cd_main_nail_image">美甲款式主圖</string>
+    <string name="tap_to_add_finished_photo">點擊新增成品照片</string>
+    <string name="label_style_name">款式名稱</string>
+    <string name="label_steps">步驟</string>
+    <string name="label_step_number">步驟 %d</string>
+    <string name="cd_remove_step">移除步驟</string>
+    <string name="cd_step_image">步驟 %d 圖片</string>
+    <string name="cd_remove_image">移除圖片</string>
+    <string name="cd_add_step_image">新增步驟圖片</string>
+    <string name="tap_to_add_step_image">新增步驟圖片（選填）</string>
+    <string name="label_description">描述</string>
+    <string name="hint_type_at_to_insert_gel">輸入 @ 來插入甲油膠</string>
+    <string name="action_add_step">新增步驟</string>
+    <string name="action_save_style">儲存款式</string>
+    <string name="action_update_style">更新款式</string>
+
+    <!-- Gel Detail Screen -->
+    <string name="detail_name">名稱</string>
+    <string name="detail_price">價格</string>
+    <string name="detail_color_code">色號</string>
+    <string name="label_used_in_nail_styles">使用於美甲款式</string>
+    <string name="dialog_title_delete_gel">刪除甲油膠</string>
+    <string name="dialog_delete_gel_used">此甲油膠被 %d 個美甲款式使用中。提及的部分將以甲油膠名稱「%s」取代。</string>
+    <string name="dialog_delete_gel_confirm">確定要刪除「%s」嗎？</string>
+
+    <!-- Gel Screen -->
+    <string name="empty_no_matching_gels">找不到符合的甲油膠。</string>
+    <string name="empty_no_gels_yet">尚無甲油膠。 點擊 + 來新增甲油膠。</string>
+    <string name="title_your_gels">我的甲油膠</string>
+
+    <!-- Nail Detail Screen -->
+    <string name="label_gels_used">使用的甲油膠</string>
+    <string name="cd_finished_nail_style">美甲成品</string>
+    <string name="dialog_title_delete_nail_style">刪除美甲款式</string>
+    <string name="dialog_delete_nail_style_confirm">確定要刪除「%s」嗎？</string>
+
+    <!-- Nail Screen -->
+    <string name="empty_no_matching_nail_styles">找不到符合的美甲款式。</string>
+    <string name="empty_no_nail_styles_yet">尚無美甲款式。\n點擊 + 來新增款式。</string>
+    <string name="title_your_nail_styles">我的美甲款式</string>
+    <string name="cd_nail_style_image">美甲款式圖片</string>
+
+    <!-- Settings Screen -->
+    <string name="settings_theme">主題</string>
+    <string name="settings_dynamic_color">動態色彩</string>
+    <string name="settings_dynamic_color_desc">使用桌布色彩</string>
+    <string name="settings_theme_color">主題色</string>
+    <string name="settings_hex_color">十六進位色碼</string>
+    <string name="settings_hex_placeholder">#FF1118</string>
+    <string name="error_invalid_hex_color">無效的十六進位色碼</string>
+    <string name="action_apply">套用</string>
+    <string name="settings_data">資料</string>
+    <string name="settings_export_data">匯出資料</string>
+    <string name="settings_export_data_desc">將所有資料匯出為 .zip 檔案以傳輸資料</string>
+    <string name="toast_save_successful">儲存成功</string>
+    <string name="toast_save_failed">儲存失敗：%s</string>
+    <string name="settings_import_data">匯入資料</string>
+    <string name="settings_import_data_desc">從 .zip 檔案匯入資料（將覆蓋現有資料）</string>
+    <string name="settings_about">關於</string>
+    <string name="settings_version">版本</string>
+    <string name="settings_author">開發者</string>
+    <string name="author_name">Leyna Chen</string>
+    <string name="dialog_title_export_complete">匯出完成</string>
+    <string name="dialog_export_choose">選擇匯出方式：</string>
+    <string name="action_share">分享</string>
+    <string name="action_save_to_device">儲存至裝置</string>
+    <string name="dialog_title_confirm_import">確認匯入</string>
+    <string name="dialog_import_warning">匯入將清除所有現有資料。確定要繼續嗎？</string>
+    <string name="dialog_title_import_complete">匯入完成</string>
+    <string name="dialog_import_result">已匯入 %d 個甲油膠和 %d 個美甲款式</string>
+    <string name="toast_unable_to_read_file">無法讀取檔案</string>
+    <string name="toast_export_failed">匯出失敗：%s</string>
+    <string name="toast_import_failed">匯入失敗：%s</string>
+    <string name="version_unknown">未知</string>
+
+    <!-- Language Settings -->
+    <string name="settings_language">語言</string>
+    <string name="settings_language_system">跟隨系統</string>
+    <string name="settings_language_en">English</string>
+    <string name="settings_language_zh_tw">繁體中文</string>
+</resources>

@@ -33,8 +33,10 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
+import com.leyna.nailmanagement.R
 import com.leyna.nailmanagement.data.entity.Gel
 import com.leyna.nailmanagement.data.entity.NailStyleWithGels
 import com.leyna.nailmanagement.ui.components.MentionText
@@ -65,7 +67,7 @@ fun NailDetailContent(
         if (nailStyle.imagePath != null) {
             AsyncImage(
                 model = nailStyle.imagePath,
-                contentDescription = "Finished nail style",
+                contentDescription = stringResource(R.string.cd_finished_nail_style),
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(200.dp)
@@ -86,7 +88,7 @@ fun NailDetailContent(
         // Gel Tags
         if (gels.isNotEmpty()) {
             Text(
-                text = "Gels Used",
+                text = stringResource(R.string.label_gels_used),
                 style = MaterialTheme.typography.titleSmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
@@ -116,7 +118,7 @@ fun NailDetailContent(
         // Steps
         if (steps.isNotEmpty()) {
             Text(
-                text = "Steps",
+                text = stringResource(R.string.label_steps),
                 style = MaterialTheme.typography.titleSmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
@@ -131,7 +133,7 @@ fun NailDetailContent(
                         modifier = Modifier.padding(12.dp)
                     ) {
                         Text(
-                            text = "Step ${index + 1}",
+                            text = stringResource(R.string.label_step_number, index + 1),
                             style = MaterialTheme.typography.labelMedium,
                             color = MaterialTheme.colorScheme.primary
                         )
@@ -141,7 +143,7 @@ fun NailDetailContent(
                         if (step.imagePath != null) {
                             AsyncImage(
                                 model = step.imagePath,
-                                contentDescription = "Step ${index + 1} image",
+                                contentDescription = stringResource(R.string.cd_step_image, index + 1),
                                 modifier = Modifier
                                     .fillMaxWidth()
                                     .height(150.dp)
@@ -180,32 +182,32 @@ fun NailDetailContent(
                     ),
                     border = ButtonDefaults.outlinedButtonBorder(enabled = true)
                 ) {
-                    Text("Delete")
+                    Text(stringResource(R.string.delete))
                 }
                 Button(
                     onClick = onEditClick,
                     modifier = Modifier.weight(1f)
                 ) {
-                    Text("Edit")
+                    Text(stringResource(R.string.edit))
                 }
             }
 
             if (showDeleteConfirm) {
                 AlertDialog(
                     onDismissRequest = { showDeleteConfirm = false },
-                    title = { Text("Delete Nail Style") },
-                    text = { Text("Are you sure you want to delete \"${nailStyle.name}\"?") },
+                    title = { Text(stringResource(R.string.dialog_title_delete_nail_style)) },
+                    text = { Text(stringResource(R.string.dialog_delete_nail_style_confirm, nailStyle.name)) },
                     confirmButton = {
                         TextButton(onClick = {
                             showDeleteConfirm = false
                             onDeleteClick()
                         }) {
-                            Text("Delete", color = MaterialTheme.colorScheme.primary)
+                            Text(stringResource(R.string.delete), color = MaterialTheme.colorScheme.primary)
                         }
                     },
                     dismissButton = {
                         TextButton(onClick = { showDeleteConfirm = false }) {
-                            Text("Cancel")
+                            Text(stringResource(R.string.cancel))
                         }
                     }
                 )

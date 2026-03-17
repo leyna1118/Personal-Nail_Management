@@ -2,10 +2,10 @@ package com.leyna.nailmanagement
 
 import android.graphics.Color
 import android.os.Bundle
-import androidx.activity.ComponentActivity
 import androidx.activity.SystemBarStyle
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.DisposableEffect
@@ -16,7 +16,7 @@ import com.leyna.nailmanagement.ui.navigation.MainNavigation
 import com.leyna.nailmanagement.ui.theme.NailManagementTheme
 import com.leyna.nailmanagement.ui.theme.ThemePreferences
 
-class MainActivity : ComponentActivity() {
+class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         installSplashScreen()
         super.onCreate(savedInstanceState)

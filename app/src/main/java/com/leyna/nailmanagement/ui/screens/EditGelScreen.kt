@@ -34,9 +34,11 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
+import com.leyna.nailmanagement.R
 import com.leyna.nailmanagement.data.entity.Gel
 
 @Composable
@@ -76,7 +78,7 @@ fun EditGelContent(
     ) {
         // Image picker section
         Text(
-            text = "Image",
+            text = stringResource(R.string.label_image),
             style = MaterialTheme.typography.labelMedium,
             color = MaterialTheme.colorScheme.onSurfaceVariant
         )
@@ -99,7 +101,7 @@ fun EditGelContent(
             if (displayImage != null) {
                 AsyncImage(
                     model = displayImage,
-                    contentDescription = "Gel image",
+                    contentDescription = stringResource(R.string.cd_gel_image),
                     modifier = Modifier
                         .fillMaxSize()
                         .clip(RoundedCornerShape(12.dp)),
@@ -109,13 +111,13 @@ fun EditGelContent(
                 Column(horizontalAlignment = Alignment.CenterHorizontally) {
                     Icon(
                         imageVector = Icons.Default.Add,
-                        contentDescription = "Add image",
+                        contentDescription = stringResource(R.string.cd_add_image),
                         modifier = Modifier.size(48.dp),
                         tint = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                     Spacer(modifier = Modifier.height(8.dp))
                     Text(
-                        text = "Tap to add image",
+                        text = stringResource(R.string.tap_to_add_image),
                         style = MaterialTheme.typography.bodyMedium,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
@@ -131,10 +133,10 @@ fun EditGelContent(
                 name = it
                 nameError = false
             },
-            label = { Text("Name") },
+            label = { Text(stringResource(R.string.label_name)) },
             isError = nameError,
             supportingText = if (nameError) {
-                { Text("Name is required") }
+                { Text(stringResource(R.string.error_name_required)) }
             } else null,
             modifier = Modifier.fillMaxWidth()
         )
@@ -147,11 +149,11 @@ fun EditGelContent(
                 price = it
                 priceError = false
             },
-            label = { Text("Price") },
+            label = { Text(stringResource(R.string.label_price)) },
             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
             isError = priceError,
             supportingText = if (priceError) {
-                { Text("Valid price is required") }
+                { Text(stringResource(R.string.error_valid_price_required)) }
             } else null,
             modifier = Modifier.fillMaxWidth()
         )
@@ -164,10 +166,10 @@ fun EditGelContent(
                 colorCode = it
                 colorCodeError = false
             },
-            label = { Text("Color Code (e.g., #FF5733)") },
+            label = { Text(stringResource(R.string.label_color_code)) },
             isError = colorCodeError,
             supportingText = if (colorCodeError) {
-                { Text("Color code is required") }
+                { Text(stringResource(R.string.error_color_code_required)) }
             } else null,
             modifier = Modifier.fillMaxWidth()
         )
@@ -190,7 +192,7 @@ fun EditGelContent(
             },
             modifier = Modifier.fillMaxWidth()
         ) {
-            Text(if (gel == null) "Save Gel" else "Update Gel")
+            Text(if (gel == null) stringResource(R.string.action_save_gel) else stringResource(R.string.action_update_gel))
         }
     }
 }

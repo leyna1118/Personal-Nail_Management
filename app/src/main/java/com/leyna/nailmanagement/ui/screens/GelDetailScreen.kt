@@ -34,8 +34,10 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
+import com.leyna.nailmanagement.R
 import com.leyna.nailmanagement.data.entity.GelWithNailStyles
 
 @OptIn(ExperimentalLayoutApi::class)
@@ -62,7 +64,7 @@ fun GelDetailContent(
         if (gel.imagePath != null) {
             AsyncImage(
                 model = gel.imagePath,
-                contentDescription = "Gel image",
+                contentDescription = stringResource(R.string.cd_gel_image),
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(200.dp)
@@ -81,11 +83,11 @@ fun GelDetailContent(
                     .fillMaxWidth()
                     .padding(16.dp)
             ) {
-                DetailRow(label = "Name", value = gel.name)
+                DetailRow(label = stringResource(R.string.detail_name), value = gel.name)
                 Spacer(modifier = Modifier.height(12.dp))
-                DetailRow(label = "Price", value = "$${String.format("%.2f", gel.price)}")
+                DetailRow(label = stringResource(R.string.detail_price), value = "$${String.format("%.2f", gel.price)}")
                 Spacer(modifier = Modifier.height(12.dp))
-                DetailRow(label = "Color Code", value = gel.colorCode)
+                DetailRow(label = stringResource(R.string.detail_color_code), value = gel.colorCode)
             }
         }
 
@@ -93,7 +95,7 @@ fun GelDetailContent(
         if (nailStyles.isNotEmpty()) {
             Spacer(modifier = Modifier.height(24.dp))
             Text(
-                text = "Used in Nail Styles",
+                text = stringResource(R.string.label_used_in_nail_styles),
                 style = MaterialTheme.typography.titleSmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                 modifier = Modifier.fillMaxWidth()
@@ -138,25 +140,25 @@ fun GelDetailContent(
                     ),
                     border = ButtonDefaults.outlinedButtonBorder(enabled = true)
                 ) {
-                    Text("Delete")
+                    Text(stringResource(R.string.delete))
                 }
                 Button(
                     onClick = onEditClick,
                     modifier = Modifier.weight(1f)
                 ) {
-                    Text("Edit")
+                    Text(stringResource(R.string.edit))
                 }
             }
 
             if (showDeleteConfirm) {
                 AlertDialog(
                     onDismissRequest = { showDeleteConfirm = false },
-                    title = { Text("Delete Gel") },
+                    title = { Text(stringResource(R.string.dialog_title_delete_gel)) },
                     text = {
                         if (nailStyles.isNotEmpty()) {
-                            Text("This gel is used in ${nailStyles.size} nail style(s). Mentions will be replaced with the gel name \"${gel.name}\".")
+                            Text(stringResource(R.string.dialog_delete_gel_used, nailStyles.size, gel.name))
                         } else {
-                            Text("Are you sure you want to delete \"${gel.name}\"?")
+                            Text(stringResource(R.string.dialog_delete_gel_confirm, gel.name))
                         }
                     },
                     confirmButton = {
@@ -164,12 +166,12 @@ fun GelDetailContent(
                             showDeleteConfirm = false
                             onDeleteClick()
                         }) {
-                            Text("Delete", color = MaterialTheme.colorScheme.primary)
+                            Text(stringResource(R.string.delete), color = MaterialTheme.colorScheme.primary)
                         }
                     },
                     dismissButton = {
                         TextButton(onClick = { showDeleteConfirm = false }) {
-                            Text("Cancel")
+                            Text(stringResource(R.string.cancel))
                         }
                     }
                 )

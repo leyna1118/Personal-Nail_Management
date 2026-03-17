@@ -42,8 +42,10 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
+import com.leyna.nailmanagement.R
 import com.leyna.nailmanagement.data.entity.Gel
 import com.leyna.nailmanagement.data.entity.NailStyleWithGels
 import com.leyna.nailmanagement.data.entity.StepWithImage
@@ -128,7 +130,7 @@ fun EditNailContent(
     ) {
         // Main finished image section
         Text(
-            text = "Finished Result Image",
+            text = stringResource(R.string.label_finished_result_image),
             style = MaterialTheme.typography.titleSmall,
             color = MaterialTheme.colorScheme.onSurfaceVariant
         )
@@ -151,7 +153,7 @@ fun EditNailContent(
             if (displayMainImage != null) {
                 AsyncImage(
                     model = displayMainImage,
-                    contentDescription = "Main nail style image",
+                    contentDescription = stringResource(R.string.cd_main_nail_image),
                     modifier = Modifier
                         .fillMaxSize()
                         .clip(RoundedCornerShape(12.dp)),
@@ -161,13 +163,13 @@ fun EditNailContent(
                 Column(horizontalAlignment = Alignment.CenterHorizontally) {
                     Icon(
                         imageVector = Icons.Default.Add,
-                        contentDescription = "Add image",
+                        contentDescription = stringResource(R.string.cd_add_image),
                         modifier = Modifier.size(48.dp),
                         tint = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                     Spacer(modifier = Modifier.height(8.dp))
                     Text(
-                        text = "Tap to add finished result photo",
+                        text = stringResource(R.string.tap_to_add_finished_photo),
                         style = MaterialTheme.typography.bodyMedium,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
@@ -184,10 +186,10 @@ fun EditNailContent(
                 name = it
                 nameError = false
             },
-            label = { Text("Style Name") },
+            label = { Text(stringResource(R.string.label_style_name)) },
             isError = nameError,
             supportingText = if (nameError) {
-                { Text("Name is required") }
+                { Text(stringResource(R.string.error_name_required)) }
             } else null,
             modifier = Modifier.fillMaxWidth()
         )
@@ -196,7 +198,7 @@ fun EditNailContent(
 
         // Steps section
         Text(
-            text = "Steps",
+            text = stringResource(R.string.label_steps),
             style = MaterialTheme.typography.titleSmall,
             color = MaterialTheme.colorScheme.onSurfaceVariant
         )
@@ -245,12 +247,12 @@ fun EditNailContent(
             ) {
                 Icon(
                     imageVector = Icons.Default.Add,
-                    contentDescription = "Add step",
+                    contentDescription = stringResource(R.string.action_add_step),
                     tint = MaterialTheme.colorScheme.primary
                 )
                 Spacer(modifier = Modifier.width(8.dp))
                 Text(
-                    text = "Add Step",
+                    text = stringResource(R.string.action_add_step),
                     color = MaterialTheme.colorScheme.primary
                 )
             }
@@ -278,7 +280,7 @@ fun EditNailContent(
             },
             modifier = Modifier.fillMaxWidth()
         ) {
-            Text(if (nailStyleWithGels == null) "Save Style" else "Update Style")
+            Text(if (nailStyleWithGels == null) stringResource(R.string.action_save_style) else stringResource(R.string.action_update_style))
         }
     }
 }
@@ -304,7 +306,7 @@ private fun StepInputFieldWithImage(
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Text(
-                    text = "Step $stepNumber",
+                    text = stringResource(R.string.label_step_number, stepNumber),
                     style = MaterialTheme.typography.labelMedium,
                     color = MaterialTheme.colorScheme.primary,
                     modifier = Modifier.weight(1f)
@@ -315,7 +317,7 @@ private fun StepInputFieldWithImage(
                 ) {
                     Icon(
                         imageVector = Icons.Default.Close,
-                        contentDescription = "Remove step",
+                        contentDescription = stringResource(R.string.cd_remove_step),
                         modifier = Modifier.size(18.dp)
                     )
                 }
@@ -342,7 +344,7 @@ private fun StepInputFieldWithImage(
                     Box {
                         AsyncImage(
                             model = step.displayImage,
-                            contentDescription = "Step $stepNumber image",
+                            contentDescription = stringResource(R.string.cd_step_image, stepNumber),
                             modifier = Modifier
                                 .fillMaxSize()
                                 .clip(RoundedCornerShape(8.dp)),
@@ -362,7 +364,7 @@ private fun StepInputFieldWithImage(
                         ) {
                             Icon(
                                 imageVector = Icons.Default.Close,
-                                contentDescription = "Remove image",
+                                contentDescription = stringResource(R.string.cd_remove_image),
                                 modifier = Modifier.size(16.dp),
                                 tint = MaterialTheme.colorScheme.error
                             )
@@ -372,13 +374,13 @@ private fun StepInputFieldWithImage(
                     Column(horizontalAlignment = Alignment.CenterHorizontally) {
                         Icon(
                             imageVector = Icons.Default.Add,
-                            contentDescription = "Add step image",
+                            contentDescription = stringResource(R.string.cd_add_step_image),
                             modifier = Modifier.size(24.dp),
                             tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f)
                         )
                         Spacer(modifier = Modifier.height(4.dp))
                         Text(
-                            text = "Add step image (optional)",
+                            text = stringResource(R.string.tap_to_add_step_image),
                             style = MaterialTheme.typography.bodySmall,
                             color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f)
                         )
@@ -394,8 +396,8 @@ private fun StepInputFieldWithImage(
                 onStorageTextChange = onTextChange,
                 allGels = allGels,
                 modifier = Modifier.fillMaxWidth(),
-                label = { Text("Description") },
-                placeholder = { Text("Type @ to insert a gel") },
+                label = { Text(stringResource(R.string.label_description)) },
+                placeholder = { Text(stringResource(R.string.hint_type_at_to_insert_gel)) },
                 minLines = 2
             )
         }

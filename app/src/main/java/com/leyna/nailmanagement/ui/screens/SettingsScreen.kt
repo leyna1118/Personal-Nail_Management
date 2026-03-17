@@ -5,6 +5,7 @@ import android.os.Build
 import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.appcompat.app.AppCompatDelegate
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -35,6 +36,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.ListItem
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.RadioButton
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -52,8 +54,11 @@ import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.core.content.FileProvider
+import androidx.core.os.LocaleListCompat
+import com.leyna.nailmanagement.R
 import com.leyna.nailmanagement.data.repository.BackupRepository
 import com.leyna.nailmanagement.data.repository.ImportResult
 import com.leyna.nailmanagement.ui.theme.ThemePreferences
@@ -106,9 +111,9 @@ fun SettingsScreenContent(
                         inputStream.copyTo(outputStream)
                     }
                 }
-                Toast.makeText(context, "Save successful", Toast.LENGTH_SHORT).show()
+                Toast.makeText(context, context.getString(R.string.toast_save_successful), Toast.LENGTH_SHORT).show()
             } catch (e: Exception) {
-                Toast.makeText(context, "Save failed: ${e.message}", Toast.LENGTH_SHORT).show()
+                Toast.makeText(context, context.getString(R.string.toast_save_failed, e.message ?: ""), Toast.LENGTH_SHORT).show()
             }
         }
         showExportDialog = false
@@ -130,9 +135,90 @@ fun SettingsScreenContent(
                 .fillMaxSize()
                 .verticalScroll(rememberScrollState())
         ) {
+            // Language section header
+            Text(
+                text = stringResource(R.string.settings_language),
+                style = MaterialTheme.typography.titleSmall,
+                color = MaterialTheme.colorScheme.primary,
+                modifier = Modifier.padding(start = 16.dp, top = 16.dp, bottom = 8.dp)
+            )
+
+            // Language selector
+            val currentLocale = AppCompatDelegate.getApplicationLocales()
+            val currentLanguageTag = if (currentLocale.isEmpty) "" else currentLocale.toLanguageTags()
+            var showLanguageDialog by remember { mutableStateOf(false) }
+
+            val currentLanguageLabel = when {
+                currentLanguageTag.isEmpty() -> stringResource(R.string.settings_language_system)
+                currentLanguageTag.startsWith("zh") -> stringResource(R.string.settings_language_zh_tw)
+                else -> stringResource(R.string.settings_language_en)
+            }
+
+            ListItem(
+                headlineContent = { Text(stringResource(R.string.settings_language)) },
+                supportingContent = { Text(currentLanguageLabel) },
+                modifier = Modifier.clickable { showLanguageDialog = true }
+            )
+            HorizontalDivider()
+
+            if (showLanguageDialog) {
+                val languageOptions = listOf(
+                    "" to stringResource(R.string.settings_language_system),
+                    "en" to stringResource(R.string.settings_language_en),
+                    "zh-TW" to stringResource(R.string.settings_language_zh_tw),
+                )
+                AlertDialog(
+                    onDismissRequest = { showLanguageDialog = false },
+                    title = { Text(stringResource(R.string.settings_language)) },
+                    text = {
+                        Column {
+                            languageOptions.forEach { (tag, label) ->
+                                val isSelected = tag == currentLanguageTag ||
+                                    (tag.isEmpty() && currentLanguageTag.isEmpty())
+                                Row(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .clickable {
+                                            val localeList = if (tag.isEmpty()) {
+                                                LocaleListCompat.getEmptyLocaleList()
+                                            } else {
+                                                LocaleListCompat.forLanguageTags(tag)
+                                            }
+                                            AppCompatDelegate.setApplicationLocales(localeList)
+                                            showLanguageDialog = false
+                                        }
+                                        .padding(vertical = 4.dp),
+                                    verticalAlignment = Alignment.CenterVertically
+                                ) {
+                                    RadioButton(
+                                        selected = isSelected,
+                                        onClick = {
+                                            val localeList = if (tag.isEmpty()) {
+                                                LocaleListCompat.getEmptyLocaleList()
+                                            } else {
+                                                LocaleListCompat.forLanguageTags(tag)
+                                            }
+                                            AppCompatDelegate.setApplicationLocales(localeList)
+                                            showLanguageDialog = false
+                                        }
+                                    )
+                                    Spacer(modifier = Modifier.width(8.dp))
+                                    Text(label)
+                                }
+                            }
+                        }
+                    },
+                    confirmButton = {
+                        TextButton(onClick = { showLanguageDialog = false }) {
+                            Text(stringResource(R.string.cancel))
+                        }
+                    }
+                )
+            }
+
             // Theme section header
             Text(
-                text = "Theme",
+                text = stringResource(R.string.settings_theme),
                 style = MaterialTheme.typography.titleSmall,
                 color = MaterialTheme.colorScheme.primary,
                 modifier = Modifier.padding(start = 16.dp, top = 16.dp, bottom = 8.dp)
@@ -141,8 +227,8 @@ fun SettingsScreenContent(
             // Dynamic color toggle (only on Android 12+)
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
                 ListItem(
-                    headlineContent = { Text("Dynamic Color") },
-                    supportingContent = { Text("Use wallpaper-based colors") },
+                    headlineContent = { Text(stringResource(R.string.settings_dynamic_color)) },
+                    supportingContent = { Text(stringResource(R.string.settings_dynamic_color_desc)) },
                     trailingContent = {
                         Switch(
                             checked = themePreferences.dynamicColor,
@@ -161,7 +247,7 @@ fun SettingsScreenContent(
                 if (!isEditingColor) {
                     // Display mode: show current color with edit button
                     ListItem(
-                        headlineContent = { Text("Theme Color") },
+                        headlineContent = { Text(stringResource(R.string.settings_theme_color)) },
                         supportingContent = { Text(currentHex) },
                         leadingContent = {
                             Box(
@@ -173,7 +259,7 @@ fun SettingsScreenContent(
                         },
                         trailingContent = {
                             TextButton(onClick = { isEditingColor = true }) {
-                                Text("Edit")
+                                Text(stringResource(R.string.edit))
                             }
                         }
                     )
@@ -196,7 +282,7 @@ fun SettingsScreenContent(
                     }
 
                     Text(
-                        text = "Theme Color",
+                        text = stringResource(R.string.settings_theme_color),
                         style = MaterialTheme.typography.bodyMedium,
                         modifier = Modifier.padding(start = 16.dp, top = 12.dp, bottom = 8.dp)
                     )
@@ -236,7 +322,7 @@ fun SettingsScreenContent(
                                 if (isSelected) {
                                     Icon(
                                         imageVector = Icons.Default.Check,
-                                        contentDescription = "Selected",
+                                        contentDescription = stringResource(R.string.cd_selected),
                                         tint = Color.White,
                                         modifier = Modifier.size(20.dp)
                                     )
@@ -260,11 +346,11 @@ fun SettingsScreenContent(
                                 hexInput = value
                                 hexError = false
                             },
-                            label = { Text("Hex Color") },
-                            placeholder = { Text("#FF1118") },
+                            label = { Text(stringResource(R.string.settings_hex_color)) },
+                            placeholder = { Text(stringResource(R.string.settings_hex_placeholder)) },
                             isError = hexError,
                             supportingText = if (hexError) {
-                                { Text("Invalid hex color") }
+                                { Text(stringResource(R.string.error_invalid_hex_color)) }
                             } else null,
                             singleLine = true,
                             modifier = Modifier.weight(1f)
@@ -292,7 +378,7 @@ fun SettingsScreenContent(
                                 hexError = false
                             }
                         ) {
-                            Text("Cancel")
+                            Text(stringResource(R.string.cancel))
                         }
                         Spacer(modifier = Modifier.width(8.dp))
                         TextButton(
@@ -308,7 +394,7 @@ fun SettingsScreenContent(
                                 }
                             }
                         ) {
-                            Text("Apply")
+                            Text(stringResource(R.string.action_apply))
                         }
                     }
                 }
@@ -317,7 +403,7 @@ fun SettingsScreenContent(
 
             // Data section header
             Text(
-                text = "Data",
+                text = stringResource(R.string.settings_data),
                 style = MaterialTheme.typography.titleMedium,
                 color = MaterialTheme.colorScheme.primary,
                 modifier = Modifier.padding(start = 16.dp, top = 16.dp, bottom = 8.dp)
@@ -325,8 +411,8 @@ fun SettingsScreenContent(
 
             // Export item
             ListItem(
-                headlineContent = { Text("Export Data") },
-                supportingContent = { Text("Export all data to a .zip file to transfer data") },
+                headlineContent = { Text(stringResource(R.string.settings_export_data)) },
+                supportingContent = { Text(stringResource(R.string.settings_export_data_desc)) },
                 modifier = Modifier.clickable(enabled = !isLoading) {
                     scope.launch {
                         isLoading = true
@@ -335,7 +421,7 @@ fun SettingsScreenContent(
                             exportedFile = file
                             showExportDialog = true
                         } catch (e: Exception) {
-                            Toast.makeText(context, "Export failed: ${e.message}", Toast.LENGTH_SHORT).show()
+                            Toast.makeText(context, context.getString(R.string.toast_export_failed, e.message ?: ""), Toast.LENGTH_SHORT).show()
                         } finally {
                             isLoading = false
                         }
@@ -346,8 +432,8 @@ fun SettingsScreenContent(
 
             // Import item
             ListItem(
-                headlineContent = { Text("Import Data") },
-                supportingContent = { Text("Import data from a .zip file (will overwrite existing data)") },
+                headlineContent = { Text(stringResource(R.string.settings_import_data)) },
+                supportingContent = { Text(stringResource(R.string.settings_import_data_desc)) },
                 modifier = Modifier.clickable(enabled = !isLoading) {
                     openDocumentLauncher.launch(arrayOf("application/zip"))
                 }
@@ -356,25 +442,25 @@ fun SettingsScreenContent(
 
             // About section header
             Text(
-                text = "About",
+                text = stringResource(R.string.settings_about),
                 style = MaterialTheme.typography.titleSmall,
                 color = MaterialTheme.colorScheme.primary,
                 modifier = Modifier.padding(start = 16.dp, top = 16.dp, bottom = 8.dp)
             )
 
             ListItem(
-                headlineContent = { Text("Version") },
+                headlineContent = { Text(stringResource(R.string.settings_version)) },
                 supportingContent = {
                     val versionName = context.packageManager
                         .getPackageInfo(context.packageName, 0).versionName
-                    Text(versionName ?: "Unknown")
+                    Text(versionName ?: stringResource(R.string.version_unknown))
                 }
             )
             HorizontalDivider()
 
             ListItem(
-                headlineContent = { Text("Author") },
-                supportingContent = { Text("Leyna Chen") }
+                headlineContent = { Text(stringResource(R.string.settings_author)) },
+                supportingContent = { Text(stringResource(R.string.author_name)) }
             )
         }
 
@@ -393,8 +479,8 @@ fun SettingsScreenContent(
     if (showExportDialog && exportedFile != null) {
         AlertDialog(
             onDismissRequest = { showExportDialog = false },
-            title = { Text("Export Complete") },
-            text = { Text("Choose how to export:") },
+            title = { Text(stringResource(R.string.dialog_title_export_complete)) },
+            text = { Text(stringResource(R.string.dialog_export_choose)) },
             confirmButton = {
                 TextButton(onClick = {
                     val fileUri = FileProvider.getUriForFile(
@@ -407,13 +493,13 @@ fun SettingsScreenContent(
                         putExtra(Intent.EXTRA_STREAM, fileUri)
                         addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
                     }
-                    context.startActivity(Intent.createChooser(shareIntent, "Share Backup File"))
+                    context.startActivity(Intent.createChooser(shareIntent, context.getString(R.string.action_share)))
                     showExportDialog = false
                 }) {
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         Icon(Icons.Default.Share, contentDescription = null)
                         Spacer(Modifier.width(4.dp))
-                        Text("Share")
+                        Text(stringResource(R.string.action_share))
                     }
                 }
             },
@@ -424,7 +510,7 @@ fun SettingsScreenContent(
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         Icon(Icons.AutoMirrored.Filled.ExitToApp, contentDescription = null)
                         Spacer(Modifier.width(4.dp))
-                        Text("Save to Device")
+                        Text(stringResource(R.string.action_save_to_device))
                     }
                 }
             }
@@ -438,8 +524,8 @@ fun SettingsScreenContent(
                 showImportConfirmDialog = false
                 pendingImportUri = null
             },
-            title = { Text("Confirm Import") },
-            text = { Text("Import will clear all existing data. Are you sure you want to continue?") },
+            title = { Text(stringResource(R.string.dialog_title_confirm_import)) },
+            text = { Text(stringResource(R.string.dialog_import_warning)) },
             confirmButton = {
                 TextButton(onClick = {
                     showImportConfirmDialog = false
@@ -453,17 +539,17 @@ fun SettingsScreenContent(
                                 importResult = result
                                 showImportResultDialog = true
                             } else {
-                                Toast.makeText(context, "Unable to read file", Toast.LENGTH_SHORT).show()
+                                Toast.makeText(context, context.getString(R.string.toast_unable_to_read_file), Toast.LENGTH_SHORT).show()
                             }
                         } catch (e: Exception) {
-                            Toast.makeText(context, "Import failed: ${e.message}", Toast.LENGTH_SHORT).show()
+                            Toast.makeText(context, context.getString(R.string.toast_import_failed, e.message ?: ""), Toast.LENGTH_SHORT).show()
                         } finally {
                             isLoading = false
                             pendingImportUri = null
                         }
                     }
                 }) {
-                    Text("OK")
+                    Text(stringResource(R.string.ok))
                 }
             },
             dismissButton = {
@@ -471,7 +557,7 @@ fun SettingsScreenContent(
                     showImportConfirmDialog = false
                     pendingImportUri = null
                 }) {
-                    Text("Cancel")
+                    Text(stringResource(R.string.cancel))
                 }
             }
         )
@@ -481,13 +567,13 @@ fun SettingsScreenContent(
     if (showImportResultDialog && importResult != null) {
         AlertDialog(
             onDismissRequest = { showImportResultDialog = false },
-            title = { Text("Import Complete") },
+            title = { Text(stringResource(R.string.dialog_title_import_complete)) },
             text = {
-                Text("Imported ${importResult!!.gelCount} Gels and ${importResult!!.nailStyleCount} Nail Styles")
+                Text(stringResource(R.string.dialog_import_result, importResult!!.gelCount, importResult!!.nailStyleCount))
             },
             confirmButton = {
                 TextButton(onClick = { showImportResultDialog = false }) {
-                    Text("OK")
+                    Text(stringResource(R.string.ok))
                 }
             }
         )

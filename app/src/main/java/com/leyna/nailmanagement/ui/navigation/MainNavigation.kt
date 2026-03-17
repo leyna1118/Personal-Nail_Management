@@ -40,6 +40,7 @@ import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavDestination.Companion.hierarchy
 import androidx.navigation.NavGraph.Companion.findStartDestination
@@ -49,6 +50,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
+import com.leyna.nailmanagement.R
 import com.leyna.nailmanagement.data.database.AppDatabase
 import com.leyna.nailmanagement.data.repository.BackupRepository
 import com.leyna.nailmanagement.ui.screens.EditGelContent
@@ -134,16 +136,16 @@ fun MainNavigation(
 
     // Determine title based on current route
     val currentTitle = when (currentRoute) {
-        BottomNavItem.Gel.route -> "Gel"
-        BottomNavItem.Nail.route -> "Nail"
-        BottomNavItem.Settings.route -> "Settings"
-        Routes.GEL_ADD -> "Add Gel"
-        Routes.GEL_DETAIL -> "Gel Details"
-        Routes.GEL_EDIT -> "Edit Gel"
-        Routes.NAIL_ADD -> "Add Nail Style"
-        Routes.NAIL_DETAIL -> "Nail Details"
-        Routes.NAIL_EDIT -> "Edit Nail Style"
-        else -> "Gel"
+        BottomNavItem.Gel.route -> stringResource(R.string.nav_gel)
+        BottomNavItem.Nail.route -> stringResource(R.string.nav_nail)
+        BottomNavItem.Settings.route -> stringResource(R.string.nav_settings)
+        Routes.GEL_ADD -> stringResource(R.string.title_add_gel)
+        Routes.GEL_DETAIL -> stringResource(R.string.title_gel_details)
+        Routes.GEL_EDIT -> stringResource(R.string.title_edit_gel)
+        Routes.NAIL_ADD -> stringResource(R.string.title_add_nail_style)
+        Routes.NAIL_DETAIL -> stringResource(R.string.title_nail_details)
+        Routes.NAIL_EDIT -> stringResource(R.string.title_edit_nail_style)
+        else -> stringResource(R.string.nav_gel)
     }
 
     // Selection state (lifted from list screens)
@@ -211,7 +213,7 @@ fun MainNavigation(
                                 Box {
                                     if (searchQuery.isEmpty()) {
                                         Text(
-                                            text = "Search...",
+                                            text = stringResource(R.string.search_placeholder),
                                             style = MaterialTheme.typography.bodyLarge,
                                             color = MaterialTheme.colorScheme.onSurfaceVariant
                                         )
@@ -233,14 +235,14 @@ fun MainNavigation(
                         }) {
                             Icon(
                                 imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                                contentDescription = "Close search"
+                                contentDescription = stringResource(R.string.cd_close_search)
                             )
                         }
                     } else if (!isMainScreen) {
                         IconButton(onClick = { navController.popBackStack() }) {
                             Icon(
                                 imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                                contentDescription = "Back"
+                                contentDescription = stringResource(R.string.cd_back)
                             )
                         }
                     }
@@ -252,7 +254,7 @@ fun MainNavigation(
                                 IconButton(onClick = { searchQuery = "" }) {
                                     Icon(
                                         imageVector = Icons.Default.Close,
-                                        contentDescription = "Clear search"
+                                        contentDescription = stringResource(R.string.cd_clear_search)
                                     )
                                 }
                             }
@@ -263,7 +265,7 @@ fun MainNavigation(
                             ) {
                                 Icon(
                                     imageVector = Icons.Default.Search,
-                                    contentDescription = "Search"
+                                    contentDescription = stringResource(R.string.cd_search)
                                 )
                             }
                             IconButton(
@@ -272,7 +274,7 @@ fun MainNavigation(
                             ) {
                                 Icon(
                                     imageVector = Icons.Outlined.CheckCircle,
-                                    contentDescription = "Select items"
+                                    contentDescription = stringResource(R.string.cd_select_items)
                                 )
                             }
                             IconButton(
@@ -290,7 +292,7 @@ fun MainNavigation(
                             ) {
                                 Icon(
                                     imageVector = Icons.Default.Add,
-                                    contentDescription = "Add"
+                                    contentDescription = stringResource(R.string.cd_add)
                                 )
                             }
                         }
@@ -302,9 +304,10 @@ fun MainNavigation(
             if (isMainScreen) {
                 NavigationBar {
                     bottomNavItems.forEach { item ->
+                        val label = stringResource(item.labelResId)
                         NavigationBarItem(
-                            icon = { Icon(imageVector = item.icon, contentDescription = item.label) },
-                            label = { Text(text = item.label) },
+                            icon = { Icon(imageVector = item.icon, contentDescription = label) },
+                            label = { Text(text = label) },
                             selected = currentDestination?.hierarchy?.any { it.route == item.route } == true,
                             colors = NavigationBarItemDefaults.colors(
                                 indicatorColor = MaterialTheme.colorScheme.primaryContainer,
