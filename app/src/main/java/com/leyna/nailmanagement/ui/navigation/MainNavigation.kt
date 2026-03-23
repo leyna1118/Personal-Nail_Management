@@ -190,6 +190,10 @@ fun MainNavigation(
             gelsWithNailStyles.filter { item ->
                 item.gel.name.lowercase().contains(q) ||
                     item.gel.colorCode.lowercase().contains(q) ||
+                    item.gel.brand?.lowercase()?.contains(q) == true ||
+                    item.gel.series?.lowercase()?.contains(q) == true ||
+                    item.gel.category?.lowercase()?.contains(q) == true ||
+                    item.gel.store?.lowercase()?.contains(q) == true ||
                     item.nailStyles.any { it.name.lowercase().contains(q) }
             }
         }
@@ -200,7 +204,13 @@ fun MainNavigation(
             val q = searchQuery.trim().lowercase()
             nailStylesWithGels.filter { item ->
                 item.nailStyle.name.lowercase().contains(q) ||
-                    item.gels.any { it.name.lowercase().contains(q) }
+                    item.gels.any { gel ->
+                        gel.name.lowercase().contains(q) ||
+                            gel.brand?.lowercase()?.contains(q) == true ||
+                            gel.series?.lowercase()?.contains(q) == true ||
+                            gel.category?.lowercase()?.contains(q) == true ||
+                            gel.store?.lowercase()?.contains(q) == true
+                    }
             }
         }
     }
